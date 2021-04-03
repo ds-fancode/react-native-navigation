@@ -67,7 +67,15 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
         unmountReactApplication();
     }
 
+    public void sendComponentWillStart(ComponentType type) {
+        if (this.reactInstanceManager == null) return;
+        ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
+        if (currentReactContext != null)
+            new EventEmitter(currentReactContext).emitComponentWillAppear(componentId, componentName, type);
+    }
+
     public void sendComponentStart(ComponentType type) {
+        if (this.reactInstanceManager == null) return;
         ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
         if (currentReactContext != null) {
             new EventEmitter(currentReactContext).emitComponentDidAppear(componentId, componentName, type);
@@ -75,6 +83,7 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
     }
 
     public void sendComponentStop(ComponentType type) {
+        if (this.reactInstanceManager == null) return;
         ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
         if (currentReactContext != null) {
             new EventEmitter(currentReactContext).emitComponentDidDisappear(componentId, componentName, type);
@@ -83,6 +92,7 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
 
     @Override
     public void sendOnNavigationButtonPressed(String buttonId) {
+        if (this.reactInstanceManager == null) return;
         ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
         if (currentReactContext != null) {
             new EventEmitter(currentReactContext).emitOnNavigationButtonPressed(componentId, buttonId);

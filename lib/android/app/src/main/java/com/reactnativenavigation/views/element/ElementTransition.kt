@@ -2,6 +2,7 @@ package com.reactnativenavigation.views.element
 
 import android.animation.AnimatorSet
 import android.util.Property
+import android.animation.Animator
 import android.view.View
 import com.reactnativenavigation.options.ElementTransitionOptions
 import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController
@@ -14,7 +15,7 @@ class ElementTransition(private val transitionOptions: ElementTransitionOptions)
     override val topInset: Int
         get() = viewController.topInset
 
-    override fun createAnimators(): AnimatorSet = transitionOptions.getAnimation(view)
+    override fun createAnimators(): Animator = transitionOptions.getAnimation(view)
 
     fun isInvalid(): Boolean = !isValid()
 

@@ -32,38 +32,26 @@ public class Options {
         result.navigationBar = NavigationBarOptions.parse(context, json.optJSONObject("navigationBar"));
         result.statusBar = StatusBarOptions.parse(context, json.optJSONObject("statusBar"));
         result.layout = LayoutOptions.parse(context, json.optJSONObject("layout"));
+        result.hardwareBack = new HardwareBackButtonOptions(json.optJSONObject("hardwareBackButton"));
         result.pipOptions = PIPOptions.parse(json.optJSONObject("pipOptions"));
         return result;
     }
 
-    @NonNull
-    public TopBarOptions topBar = new TopBarOptions();
-    @NonNull
-    public TopTabsOptions topTabs = new TopTabsOptions();
-    @NonNull
-    public TopTabOptions topTabOptions = new TopTabOptions();
-    @NonNull
-    public BottomTabOptions bottomTabOptions = new BottomTabOptions();
-    @NonNull
-    public BottomTabsOptions bottomTabsOptions = new BottomTabsOptions();
-    @NonNull
-    public OverlayOptions overlayOptions = new OverlayOptions();
-    @NonNull
-    public FabOptions fabOptions = new FabOptions();
-    @NonNull
-    public AnimationsOptions animations = new AnimationsOptions();
-    @NonNull
-    public SideMenuRootOptions sideMenuRootOptions = new SideMenuRootOptions();
-    @NonNull
-    public ModalOptions modal = new ModalOptions();
-    @NonNull
-    public NavigationBarOptions navigationBar = new NavigationBarOptions();
-    @NonNull
-    public StatusBarOptions statusBar = new StatusBarOptions();
-    @NonNull
-    public LayoutOptions layout = new LayoutOptions();
-    @NonNull
-    public PIPOptions pipOptions = new PIPOptions();
+    @NonNull public TopBarOptions topBar = new TopBarOptions();
+    @NonNull public TopTabsOptions topTabs = new TopTabsOptions();
+    @NonNull public TopTabOptions topTabOptions = new TopTabOptions();
+    @NonNull public BottomTabOptions bottomTabOptions = new BottomTabOptions();
+    @NonNull public BottomTabsOptions bottomTabsOptions = new BottomTabsOptions();
+    @NonNull public OverlayOptions overlayOptions = new OverlayOptions();
+    @NonNull public FabOptions fabOptions = new FabOptions();
+    @NonNull public AnimationsOptions animations = new AnimationsOptions();
+    @NonNull public SideMenuRootOptions sideMenuRootOptions = new SideMenuRootOptions();
+    @NonNull public ModalOptions modal = new ModalOptions();
+    @NonNull public NavigationBarOptions navigationBar = new NavigationBarOptions();
+    @NonNull public StatusBarOptions statusBar = new StatusBarOptions();
+    @NonNull public LayoutOptions layout = new LayoutOptions();
+    @NonNull public HardwareBackButtonOptions hardwareBack = new HardwareBackButtonOptions();
+    @NonNull public PIPOptions pipOptions = new PIPOptions();
 
     void setTopTabIndex(int i) {
         topTabOptions.tabIndex = i;
@@ -86,6 +74,7 @@ public class Options {
         result.statusBar.mergeWith(statusBar);
         result.layout.mergeWith(layout);
         result.pipOptions.mergeWith(pipOptions);
+        result.hardwareBack.mergeWith(hardwareBack);
         return result;
     }
 
@@ -105,6 +94,7 @@ public class Options {
         result.statusBar.mergeWith(other.statusBar);
         result.layout.mergeWith(other.layout);
         result.pipOptions.mergeWith(other.pipOptions);
+        result.hardwareBack.mergeWith(other.hardwareBack);
         return result;
     }
 
@@ -122,6 +112,7 @@ public class Options {
         statusBar.mergeWithDefault(defaultOptions.statusBar);
         layout.mergeWithDefault(defaultOptions.layout);
         pipOptions.mergeWith(defaultOptions.pipOptions);
+        hardwareBack.mergeWithDefault(defaultOptions.hardwareBack);
         return this;
     }
 

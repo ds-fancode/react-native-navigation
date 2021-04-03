@@ -1,5 +1,5 @@
 // tslint:disable jsdoc-format
-import { ImageRequireSource, Insets } from 'react-native';
+import { ImageRequireSource, ImageSourcePropType, Insets } from 'react-native';
 import { PIPActionButton } from './Layout';
 
 // TODO: Import ColorValue instead when upgrading @types/react-native to 0.63+
@@ -36,7 +36,7 @@ type FontWeight =
   | FontWeightIOS;
 export type LayoutOrientation = 'portrait' | 'landscape';
 type AndroidDensityNumber = number;
-type SystemItemIcon =
+export type SystemItemIcon =
   | 'done'
   | 'cancel'
   | 'edit'
@@ -60,11 +60,12 @@ type SystemItemIcon =
   | 'fastForward'
   | 'undo'
   | 'redo';
-type Interpolation =
+export type Interpolation =
   | { type: 'accelerate'; factor?: number }
   | { type: 'decelerate'; factor?: number }
   | { type: 'decelerateAccelerate' }
   | { type: 'accelerateDecelerate' }
+  | { type: 'fastOutSlowIn' }
   | { type: 'linear' }
   | { type: 'overshoot'; tension?: number }
   | {
@@ -327,7 +328,6 @@ export interface OptionsTopBarBackButton {
   accessibilityLabel?: string;
   /**
    * Button id for reference press event
-   * #### (Android specific)
    */
   id?: string;
   /**
@@ -376,6 +376,37 @@ export interface OptionsTopBarBackButton {
    * Set testID for reference in E2E tests
    */
   testID?: string;
+  /**
+   * Enables iOS 14 back button menu display
+   * #### (iOS specific)
+   * @default true
+   */
+  enableMenu?: boolean;
+  /**
+   * Allows the NavBar to be translucent (blurred)
+   * #### (iOS specific)
+   */
+  displayMode?: 'default' | 'generic' | 'minimal';
+  /**
+   * Controls whether the default back button should pop the Stack or not
+   * @default true
+   */
+  popStackOnPress?: boolean;
+}
+
+export interface HardwareBackButtonOptions {
+  /**
+   * Controls whether the hardware back button should dismiss modal or not
+   * #### (Android specific)
+   * @default true
+   */
+  dismissModalOnPress?: boolean;
+  /**
+   * Controls whether the hardware back button should pop the Stack or not
+   * #### (Android specific)
+   * @default true
+   */
+  popStackOnPress?: boolean;
 }
 
 export interface OptionsTopBarScrollEdgeAppearanceBackground {
@@ -393,6 +424,16 @@ export interface OptionsTopBarScrollEdgeAppearanceBackground {
 export interface OptionsTopBarScrollEdgeAppearance {
   background?: OptionsTopBarScrollEdgeAppearanceBackground;
   active: boolean;
+  /**
+   * Disable the border on bottom of the navbar
+   * #### (iOS specific)
+   * @default false
+   */
+  noBorder?: boolean;
+  /**
+   * Change the navbar border color
+   */
+  borderColor?: Color;
 }
 
 export interface OptionsTopBarBackground {
@@ -517,6 +558,10 @@ export interface OptionsTopBarButton {
    */
   disabledColor?: Color;
   /**
+   * Set icon background style
+   */
+  iconBackground?: IconBackgroundOptions;
+  /**
    * Set testID for reference in E2E tests
    */
   testID?: string;
@@ -529,6 +574,7 @@ export interface OptionsTopBarButton {
 
 export interface OptionsSearchBar {
   visible?: boolean;
+  focus?: boolean;
   hideOnScroll?: boolean;
   hideTopBarOnFocus?: boolean;
   obscuresBackgroundDuringPresentation?: boolean;
@@ -732,6 +778,12 @@ export interface OptionsBottomTabs {
    */
   animate?: boolean;
   /**
+   * Controls whether tab selection is animated or not
+   * #### (android specific)
+   * @default true
+   */
+  animateTabSelection?: boolean;
+  /**
    * Use large icons when possible, even when three tabs without titles are displayed
    * #### (android specific)
    * @default false
@@ -749,6 +801,11 @@ export interface OptionsBottomTabs {
    * Set a testID to reference the bottom tabs
    */
   testID?: string;
+  /**
+   * Overrides the text that's read by the screen reader when the user interacts with the element
+   * #### (iOS specific)
+   */
+  accessibilityLabel?: string;
   /**
    * Draw screen component under the tab bar
    */
@@ -795,6 +852,33 @@ export interface OptionsBottomTabs {
    * #### (Android specific)
    */
   hideOnScroll?: boolean;
+  /**
+   * Control the top border color of the Bottom tabs bar
+   */
+  borderColor?: Color;
+  /**
+   * Control the top border width of the Bottom tabs bar
+   */
+  borderWidth?: number;
+  /**
+   * Control the shadow of the Bottom tabs bar
+   */
+  shadow?: ShadowOptions;
+}
+
+export interface ShadowOptions {
+  /**
+   * The opacity of the shadow
+   */
+  opacity?: number;
+  /**
+   * The color of the shadow
+   */
+  color?: Color;
+  /**
+   * The blur radius used to create the shadow
+   */
+  radius?: number;
 }
 
 export interface DotIndicatorOptions {
@@ -811,7 +895,7 @@ export interface ImageSystemSource {
   fallback?: ImageRequireSource | string;
 }
 
-export type ImageResource = ImageRequireSource | string | ImageSystemSource;
+export type ImageResource = ImageSourcePropType | string | ImageSystemSource;
 
 export interface OptionsBottomTab {
   dotIndicator?: DotIndicatorOptions;
@@ -846,6 +930,16 @@ export interface OptionsBottomTab {
    */
   iconColor?: Color;
   /**
+   * Set the icon width
+   * #### (Android specific)
+   */
+  iconWidth?: number;
+  /**
+   * Set the icon height
+   * #### (Android specific)
+   */
+  iconHeight?: number;
+  /**
    * Set the text color
    */
   textColor?: Color;
@@ -877,7 +971,6 @@ export interface OptionsBottomTab {
   fontSize?: number;
   /**
    * Set the insets of the icon
-   * #### (iOS specific)
    */
   iconInsets?: Insets;
   /**
@@ -955,7 +1048,7 @@ export interface OverlayOptions {
    */
   interceptTouchOutside?: boolean;
   /**
-   * Control wether this Overlay should handle Keyboard events.
+   * Control whether this Overlay should handle Keyboard events.
    * Set this to true if your Overlay contains a TextInput.
    */
   handleKeyboardEvents?: boolean;
@@ -963,7 +1056,7 @@ export interface OverlayOptions {
 
 export interface ModalOptions {
   /**
-   * Control wether this modal should be dismiss using swipe gesture when the modalPresentationStyle = 'pageSheet'
+   * Control whether this modal should be dismiss using swipe gesture when the modalPresentationStyle = 'pageSheet'
    * #### (iOS specific)
    */
   swipeToDismiss?: boolean;
@@ -1130,7 +1223,37 @@ export interface ViewAnimationOptions extends ScreenAnimationOptions {
   id?: string;
 }
 
-export interface ModalAnimationOptions extends ViewAnimationOptions {
+export interface EnterExitAnimationOptions {
+  /**
+   * Animate opening component
+   */
+  enter?: ViewAnimationOptions;
+  /**
+   * Animate closing component
+   */
+  exit?: ViewAnimationOptions;
+}
+
+export interface OldModalAnimationOptions extends ViewAnimationOptions {
+  /**
+   * Animations to be applied on elements which are shared between the appearing and disappearing screens
+   */
+  sharedElementTransitions?: SharedElementTransition[];
+  /**
+   * Animations to be applied on views in the appearing or disappearing screens
+   */
+  elementTransitions?: ElementTransition[];
+}
+
+export interface ModalAnimationOptions {
+  /**
+   * Animate opening modal
+   */
+  enter?: ViewAnimationOptions;
+  /**
+   * Animate closing modal
+   */
+  exit?: ViewAnimationOptions;
   /**
    * Animations to be applied on elements which are shared between the appearing and disappearing screens
    */
@@ -1157,15 +1280,30 @@ export interface StackAnimationOptions {
   /**
    * Configure animations for the top bar
    */
-  topBar?: ViewAnimationOptions;
+  topBar?:
+    | ViewAnimationOptions
+    | {
+        enter?: ViewAnimationOptions;
+        exit?: ViewAnimationOptions;
+      };
   /**
    * Configure animations for the bottom tabs
    */
-  bottomTabs?: ViewAnimationOptions;
+  bottomTabs?:
+    | ViewAnimationOptions
+    | {
+        enter?: ViewAnimationOptions;
+        exit?: ViewAnimationOptions;
+      };
   /**
    * Configure animations for the content (Screen)
    */
-  content?: ViewAnimationOptions;
+  content?:
+    | ViewAnimationOptions
+    | {
+        enter?: ViewAnimationOptions;
+        exit?: ViewAnimationOptions;
+      };
   /**
    * Animations to be applied on elements which are shared between the appearing and disappearing screens
    */
@@ -1183,13 +1321,14 @@ export interface AnimationOptions {
   /**
    * Configure the setStackRoot animation
    */
-  setStackRoot?: ViewAnimationOptions;
+  setStackRoot?: ViewAnimationOptions | StackAnimationOptions;
   /**
    * Configure the setRoot animation
    */
-  setRoot?: ViewAnimationOptions;
+  setRoot?: ViewAnimationOptions | EnterExitAnimationOptions;
   /**
-   * Configure what animates when a screen is pushed
+   * Configure the animation of the pushed screen
+   * #### (Android specific)
    */
   push?: StackAnimationOptions;
   /**
@@ -1199,12 +1338,11 @@ export interface AnimationOptions {
   /**
    * Configure what animates when modal is shown
    */
-  showModal?: ModalAnimationOptions;
+  showModal?: OldModalAnimationOptions | ModalAnimationOptions;
   /**
    * Configure what animates when modal is dismissed
    */
-  dismissModal?: ModalAnimationOptions;
-
+  dismissModal?: OldModalAnimationOptions | ModalAnimationOptions;
   /**
    * Configure what animates when a screen is pushed
    */
@@ -1254,6 +1392,29 @@ export interface WindowOptions {
    * Configure the background color of the application's main window.
    */
   backgroundColor?: Color;
+}
+
+export interface IconBackgroundOptions {
+  /**
+   * Set background color
+   */
+  color: Color;
+  /**
+   * Set background color on disabled state
+   */
+  disabledColor?: Color;
+  /**
+   * Set corner radius
+   */
+  cornerRadius?: number;
+  /**
+   * Set width
+   */
+  width?: number;
+  /**
+   * Set height
+   */
+  height?: number;
 }
 
 export interface Options {
@@ -1338,6 +1499,11 @@ export interface Options {
    * Configure Android's NavigationBar
    */
   navigationBar?: NavigationBarOptions;
+
+  /**
+   * Android Hardware Back button configuration
+   */
+  hardwareBackButton?: HardwareBackButtonOptions;
 
   /**
    * Preview configuration for Peek and Pop

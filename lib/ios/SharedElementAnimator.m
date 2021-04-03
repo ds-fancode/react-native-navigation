@@ -4,11 +4,9 @@
 #import "AnimatedViewFactory.h"
 #import "ColorTransition.h"
 #import "CornerRadiusTransition.h"
-#import "LayerBoundsTransition.h"
 #import "RectTransition.h"
 #import "RotationTransition.h"
 #import "TextStorageTransition.h"
-#import "TransformRectTransition.h"
 
 @implementation SharedElementAnimator {
     SharedElementTransitionOptions *_transitionOptions;
@@ -47,8 +45,8 @@
 
 - (NSMutableArray<id<DisplayLinkAnimation>> *)createAnimations {
     NSMutableArray *animations = [super createAnimations:_transitionOptions];
-    CGFloat startDelay = [_transitionOptions.startDelay getWithDefaultValue:0];
-    CGFloat duration = [_transitionOptions.duration getWithDefaultValue:300];
+    CGFloat startDelay = [_transitionOptions.startDelay withDefault:0];
+    CGFloat duration = [_transitionOptions.duration withDefault:300];
     id<Interpolator> interpolator = _transitionOptions.interpolator;
 
     if (!CGRectEqualToRect(self.view.location.fromFrame, self.view.location.toFrame)) {
@@ -58,25 +56,6 @@
                                                         startDelay:startDelay
                                                           duration:duration
                                                       interpolator:interpolator]];
-    }
-
-    if (!CGRectEqualToRect(self.view.location.fromBounds, self.view.location.toBounds)) {
-        [animations
-            addObject:[[LayerBoundsTransition alloc] initWithView:self.view
-                                                             from:self.view.location.fromBounds
-                                                               to:self.view.location.toBounds
-                                                       startDelay:startDelay
-                                                         duration:duration
-                                                     interpolator:interpolator]];
-    }
-
-    if (!CATransform3DEqualToTransform(self.view.location.fromTransform,
-                                       self.view.location.toTransform)) {
-        [animations addObject:[[TransformRectTransition alloc] initWithView:self.view
-                                                               viewLocation:self.view.location
-                                                                 startDelay:startDelay
-                                                                   duration:duration
-                                                               interpolator:interpolator]];
     }
 
     if (![_fromView.backgroundColor isEqual:_toView.backgroundColor]) {

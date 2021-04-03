@@ -9,6 +9,7 @@ import android.view.ViewTreeObserver;
 import androidx.annotation.CallSuper;
 import androidx.annotation.CheckResult;
 import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 

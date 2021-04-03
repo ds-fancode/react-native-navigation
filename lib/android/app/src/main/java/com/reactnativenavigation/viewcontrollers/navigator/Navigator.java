@@ -158,15 +158,15 @@ public class Navigator extends ParentController {
 
     }
 
-
-    public void setRoot(final ViewController viewController, CommandListener commandListener, ReactInstanceManager reactInstanceManager) {
+    public void setRoot(final ViewController<?> appearing, CommandListener commandListener, ReactInstanceManager reactInstanceManager) {
         previousRoot = root;
         modalStack.destroy();
         final boolean removeSplashView = isRootNotCreated();
         if (isRootNotCreated()) getView();
-        root = viewController;
+        final ViewController<?> disappearing = previousRoot;
+        root = appearing;
         root.setOverlay(new RootOverlay(getActivity(), contentLayout));
-        rootPresenter.setRoot(root, defaultOptions, new CommandListenerAdapter(commandListener) {
+        rootPresenter.setRoot(appearing, disappearing, defaultOptions, new CommandListenerAdapter(commandListener) {
             @Override
             public void onSuccess(String childId) {
                 root.onViewDidAppear();
@@ -293,6 +293,10 @@ public class Navigator extends ParentController {
 
     public void dismissOverlay(final String componentId, CommandListener listener) {
         overlayManager.dismiss(overlaysLayout, componentId, listener);
+    }
+
+    public void dismissAllOverlays(CommandListener listener) {
+        overlayManager.dismissAll(overlaysLayout, listener);
     }
 
     @Nullable

@@ -214,6 +214,11 @@ public class NavigationModule extends ReactContextBaseJavaModule {
         handle(() -> navigator().setPIPHostId(componentId));
     }
 
+    @ReactMethod
+    public void dismissAllOverlays(String commandId, Promise promise) {
+        handle(() -> navigator().dismissAllOverlays(new NativeCommandListener("dismissAllOverlays", commandId, promise, eventEmitter, now)));
+    }
+
     private Navigator navigator() {
         return activity().getNavigator();
     }
