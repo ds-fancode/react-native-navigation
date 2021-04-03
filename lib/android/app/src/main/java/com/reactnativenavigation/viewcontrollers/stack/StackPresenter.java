@@ -62,6 +62,7 @@ import static com.reactnativenavigation.utils.CollectionUtils.filter;
 import static com.reactnativenavigation.utils.CollectionUtils.first;
 import static com.reactnativenavigation.utils.CollectionUtils.forEach;
 import static com.reactnativenavigation.utils.CollectionUtils.getOrDefault;
+import static com.reactnativenavigation.utils.CollectionUtils.isNullOrEmpty;
 import static com.reactnativenavigation.utils.CollectionUtils.keyBy;
 import static com.reactnativenavigation.utils.CollectionUtils.merge;
 import static com.reactnativenavigation.utils.ObjectUtils.perform;

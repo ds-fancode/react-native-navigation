@@ -3,8 +3,8 @@ package com.reactnativenavigation.views.element
 import android.view.View
 import com.reactnativenavigation.options.ElementTransitions
 import com.reactnativenavigation.options.LayoutAnimation
-import com.reactnativenavigation.options.NestedAnimationsOptions
 import com.reactnativenavigation.options.SharedElements
+import com.reactnativenavigation.options.TransitionAnimationOptions
 import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController
 import com.reactnativenavigation.views.element.finder.ExistingViewFinder
 
@@ -66,7 +66,7 @@ class TransitionSetCreator {
                 .filter { it.isValid() }
     }
 
-    suspend fun createPIPIn(pipContainer: View, animation: NestedAnimationsOptions, screen: ViewController<*>, onAnimatorsCreated: (TransitionSet) -> Unit) {
+    suspend fun createPIPIn(pipContainer: View, animation: TransitionAnimationOptions, screen: ViewController<*>, onAnimatorsCreated: (TransitionSet) -> Unit) {
         val elementTransitions = animation.elementTransitions
         if (!elementTransitions.hasValue()) {
             onAnimatorsCreated(TransitionSet())
@@ -76,7 +76,7 @@ class TransitionSetCreator {
         createPIPInElementTransitions(pipContainer, screen, transitionSet, elementTransitions, onAnimatorsCreated)
     }
 
-    suspend fun createPIPOut(pipContainer: View, animation: NestedAnimationsOptions, screen: ViewController<*>, onAnimatorsCreated: (TransitionSet) -> Unit) {
+    suspend fun createPIPOut(pipContainer: View, animation: TransitionAnimationOptions, screen: ViewController<*>, onAnimatorsCreated: (TransitionSet) -> Unit) {
         val elementTransitions = animation.elementTransitions
         if (!elementTransitions.hasValue()) {
             onAnimatorsCreated(TransitionSet())

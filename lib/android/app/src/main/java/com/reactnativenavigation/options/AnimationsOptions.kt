@@ -9,6 +9,8 @@ class AnimationsOptions {
     @JvmField var setRoot = TransitionAnimationOptions()
     @JvmField var showModal = TransitionAnimationOptions()
     @JvmField var dismissModal = TransitionAnimationOptions()
+    @JvmField var pipIn = TransitionAnimationOptions()
+    @JvmField var pipOut = TransitionAnimationOptions()
 
     fun mergeWith(other: AnimationsOptions) {
         push.mergeWith(other.push)
@@ -17,6 +19,8 @@ class AnimationsOptions {
         setStackRoot.mergeWith(other.setStackRoot)
         showModal.mergeWith(other.showModal)
         dismissModal.mergeWith(other.dismissModal)
+        pipIn.mergeWith(other.pipIn)
+        pipOut.mergeWith(other.pipOut)
     }
 
     fun mergeWithDefault(defaultOptions: AnimationsOptions) {
@@ -26,6 +30,8 @@ class AnimationsOptions {
         setRoot.mergeWithDefault(defaultOptions.setRoot)
         showModal.mergeWithDefault(defaultOptions.showModal)
         dismissModal.mergeWithDefault(defaultOptions.dismissModal)
+        pipIn.mergeWithDefault(defaultOptions.pipIn)
+        pipOut.mergeWithDefault(defaultOptions.pipOut)
     }
 
     companion object {
@@ -50,6 +56,16 @@ class AnimationsOptions {
             val dismissModalJson = json.optJSONObject("dismissModal")
             dismissModalJson?.let {
                 options.dismissModal = parseTransitionAnimationOptions(it)
+            }
+
+            val pipInJson = json.optJSONObject("pipIn")
+            pipInJson?.let {
+                options.pipIn = parseTransitionAnimationOptions(it)
+            }
+
+            val pipOutJson = json.optJSONObject("pipOut")
+            pipOutJson?.let {
+                options.pipOut = parseTransitionAnimationOptions(it)
             }
             return options
         }

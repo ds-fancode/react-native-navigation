@@ -109,7 +109,7 @@ public class PIPNavigator extends ParentController<PIPContainer> {
                 updatePIPStateInternal(MOUNT_START);
             }
         }
-        if (this.childController.options.animations.pipIn.enabled.isTrueOrUndefined() && !toNative) {
+        if (this.childController.options.animations.pipIn.getEnter().enabled.isTrueOrUndefined() && !toNative) {
             this.animator.pipIn(floatingLayout, this.childController, this.childController.options, () -> {
                 updatePIPStateInternal(PIPStates.CUSTOM_COMPACT);
             });
@@ -123,7 +123,7 @@ public class PIPNavigator extends ParentController<PIPContainer> {
             pipFloatingLayout.cancelAnimations();
             pipFloatingLayout.initiateRestore();
             updatePIPStateInternal(PIPStates.RESTORE_START);
-            if (this.childController.options.animations.pipOut.enabled.isTrueOrUndefined() && !wasDirectLaunchToNative) {
+            if (this.childController.options.animations.pipOut.getExit().enabled.isTrueOrUndefined() && !wasDirectLaunchToNative) {
                 this.animator.pipOut(this.pipFloatingLayout,
                         this.childController,
                         this.childController.options,

@@ -14,6 +14,7 @@ import com.reactnativenavigation.options.params.Text
 import com.reactnativenavigation.options.parsers.BoolParser
 import com.reactnativenavigation.options.parsers.TextParser
 import com.reactnativenavigation.utils.CollectionUtils
+import com.reactnativenavigation.utils.CollectionUtils.first
 import com.reactnativenavigation.utils.CollectionUtils.forEach
 import com.reactnativenavigation.views.ViewExtension
 import org.json.JSONObject
