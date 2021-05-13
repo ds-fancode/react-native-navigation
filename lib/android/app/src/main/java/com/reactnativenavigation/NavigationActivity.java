@@ -123,7 +123,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             getReactGateway().onActivityDestroyed(this);
         }
         getApplication().unregisterActivityLifecycleCallbacks(lifecycleCallback);
-
     }
 
     @Override
