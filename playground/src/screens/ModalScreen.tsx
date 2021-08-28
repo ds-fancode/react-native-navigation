@@ -10,12 +10,17 @@ import Navigation from './../services/Navigation';
 import { component } from './../commons/Layouts';
 import { stack } from '../commons/Layouts';
 import Screens from './Screens';
+import flags from '../flags';
 import testIDs from '../testIDs';
+import { Dimensions, Modal } from 'react-native';
+const height = Math.round(Dimensions.get('window').height);
+const MODAL_ANIMATION_DURATION = 350;
 
 const {
   PUSH_BTN,
   MODAL_SCREEN_HEADER,
   MODAL_BTN,
+  MODAL_DISABLED_BACK_BTN,
   DISMISS_MODAL_BTN,
   DISMISS_UNKNOWN_MODAL_BTN,
   MODAL_LIFECYCLE_BTN,
@@ -25,6 +30,8 @@ const {
   DISMISS_ALL_MODALS_BTN,
   DISMISS_FIRST_MODAL_BTN,
   SET_ROOT,
+  TOGGLE_REACT_NATIVE_MODAL,
+  SHOW_MODAL_AND_DISMISS_REACT_NATIVE_MODAL,
 } = testIDs;
 
 interface Props {
@@ -34,6 +41,7 @@ interface Props {
 
 interface State {
   swipeableToDismiss: boolean;
+  reactNativeModalVisible: boolean;
 }
 
 export default class ModalScreen extends NavigationComponent<Props, State> {
@@ -52,6 +60,7 @@ export default class ModalScreen extends NavigationComponent<Props, State> {
     super(props);
     this.state = {
       swipeableToDismiss: false,
+      reactNativeModalVisible: false,
     };
   }
 
@@ -62,6 +71,19 @@ export default class ModalScreen extends NavigationComponent<Props, State> {
         footer={`Modal Stack Position: ${this.getModalPosition()}`}
       >
         <Button label="Show Modal" testID={MODAL_BTN} onPress={this.showModal} />
+        {flags.useCustomAnimations && (
+          <Button label="Back.Compat. Show Modal Anim" onPress={this.showModalWithTransition} />
+        )}
+        {flags.useCustomAnimations && (
+          <Button label="New! Show Modal Push Anim" onPress={this.showModalWithTransitionPush} />
+        )}
+        {!this.props.previousModalIds && (
+          <Button
+            label="Show Disabled Hardware Back Modal"
+            testID={MODAL_DISABLED_BACK_BTN}
+            onPress={this.showDisabledHardwareBackModal}
+          />
+        )}
         <Button label="Dismiss Modal" testID={DISMISS_MODAL_BTN} onPress={this.dismissModal} />
         <Button
           label="Dismiss Unknown Modal"
@@ -103,13 +125,118 @@ export default class ModalScreen extends NavigationComponent<Props, State> {
         <Button label="Push" testID={PUSH_BTN} onPress={this.push} />
         <Button label="Set Root" testID={SET_ROOT} onPress={this.setRoot} />
         <Button
-          label={`Toggle to swipeToDismiss: ${this.state.swipeableToDismiss}`}
-          onPress={this.toggleSwipeToDismiss}
+          label="Toggle react-native modal"
+          testID={TOGGLE_REACT_NATIVE_MODAL}
+          onPress={this.toggleModal}
         />
+
+        <Modal visible={this.state.reactNativeModalVisible} animationType={'slide'}>
+          <Root>
+            <Button label="Toggle react-native modal" onPress={this.toggleModal} />
+            <Button
+              label="Present another modal and dismiss current modal"
+              testID={SHOW_MODAL_AND_DISMISS_REACT_NATIVE_MODAL}
+              onPress={async () => {
+                await Navigation.showModal({
+                  component: {
+                    name: Screens.Modal,
+                  },
+                });
+                this.toggleModal();
+              }}
+            />
+          </Root>
+        </Modal>
       </Root>
     );
   }
 
+  toggleModal = () =>
+    this.setState({ reactNativeModalVisible: !this.state.reactNativeModalVisible });
+
+  showModalWithTransition = () => {
+    Navigation.showModal({
+      component: {
+        name: Screens.Modal,
+        options: {
+          animations: {
+            showModal: {
+              translationY: {
+                from: height,
+                to: 0,
+                duration: MODAL_ANIMATION_DURATION,
+                interpolation: { type: 'decelerate' },
+              },
+            },
+            dismissModal: {
+              translationY: {
+                from: 0,
+                to: height,
+                duration: MODAL_ANIMATION_DURATION,
+                interpolation: { type: 'decelerate' },
+              },
+            },
+          },
+        },
+        passProps: {
+          modalPosition: this.getModalPosition() + 1,
+          previousModalIds: concat([], this.props.previousModalIds || [], this.props.componentId),
+        },
+      },
+    });
+  };
+
+  showModalWithTransitionPush = () => {
+    Navigation.showModal({
+      component: {
+        name: Screens.Modal,
+        options: {
+          animations: {
+            showModal: {
+              enter: {
+                translationY: {
+                  from: height,
+                  to: 0,
+                  duration: MODAL_ANIMATION_DURATION,
+                  interpolation: { type: 'decelerate' },
+                },
+              },
+              exit: {
+                translationY: {
+                  from: 0,
+                  to: -height,
+                  duration: MODAL_ANIMATION_DURATION,
+                  interpolation: { type: 'decelerate' },
+                },
+              },
+            },
+            dismissModal: {
+              enter: {
+                translationY: {
+                  from: -height,
+                  to: 0,
+                  duration: MODAL_ANIMATION_DURATION,
+                  interpolation: { type: 'decelerate' },
+                },
+              },
+              exit: {
+                translationY: {
+                  from: 0,
+                  to: height,
+                  duration: MODAL_ANIMATION_DURATION,
+                  interpolation: { type: 'decelerate' },
+                },
+              },
+            },
+          },
+        },
+        passProps: {
+          modalPosition: this.getModalPosition() + 1,
+          previousModalIds: concat([], this.props.previousModalIds || [], this.props.componentId),
+        },
+      },
+    });
+  };
   showModal = () => {
     Navigation.showModal({
       component: {
@@ -117,6 +244,17 @@ export default class ModalScreen extends NavigationComponent<Props, State> {
         passProps: {
           modalPosition: this.getModalPosition() + 1,
           previousModalIds: concat([], this.props.previousModalIds || [], this.props.componentId),
+        },
+      },
+    });
+  };
+
+  showDisabledHardwareBackModal = () => {
+    Navigation.showModal({
+      component: {
+        name: Screens.Modal,
+        options: {
+          hardwareBackButton: { dismissModalOnPress: false },
         },
       },
     });
@@ -152,15 +290,4 @@ export default class ModalScreen extends NavigationComponent<Props, State> {
   getModalPosition = () => this.props.modalPosition || 1;
 
   getPreviousModalId = () => last(this.props.previousModalIds)!;
-
-  toggleSwipeToDismiss = () => {
-    this.setState((prevState) => {
-      Navigation.mergeOptions(this.props.componentId, {
-        modal: {
-          swipeToDismiss: !prevState.swipeableToDismiss,
-        },
-      });
-      return { swipeableToDismiss: !prevState.swipeableToDismiss };
-    });
-  };
 }

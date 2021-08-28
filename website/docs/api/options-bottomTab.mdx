@@ -10,6 +10,13 @@ const options = {
 };
 ```
 
+
+## `selectTabOnPress`
+
+| Type    | Required | Platform |
+| ------- | -------- | -------- |
+| boolean | No       | Both     |
+
 ## `badge`
 
 | Type   | Required | Platform |
@@ -66,9 +73,25 @@ const options = {
 
 ## `icon`
 
+| Type                                       | Required | Platform |
+| ------------------------------------------ | -------- | -------- |
+| [ImageResource](options-imageResource.mdx) | No       | Both     |
+
+## `iconWidth`
+
+The width (in dp) of the icon.
+
 | Type   | Required | Platform |
 | ------ | -------- | -------- |
-| [ImageResource](options-imageResource.mdx) | No       | Both     |
+| number | No       | Android  |
+
+## `iconHeight`
+
+The height (in dp) of the icon.
+
+| Type   | Required | Platform |
+| ------ | -------- | -------- |
+| number | No       | Android  |
 
 ## `iconColor`
 
@@ -84,8 +107,8 @@ const options = {
 
 ## `selectedIcon`
 
-| Type   | Required | Platform |
-| ------ | -------- | -------- |
+| Type                                       | Required | Platform |
+| ------------------------------------------ | -------- | -------- |
 | [ImageResource](options-imageResource.mdx) | No       | Both     |
 
 ## `selectedIconColor`
@@ -123,6 +146,14 @@ const options = {
 | Type   | Required | Platform |
 | ------ | -------- | -------- |
 | string | No       | Both     |
+
+### `accessibilityLabel`
+
+Overrides the text that's read by the screen reader when the user interacts with the bottomTab button.
+
+| Type   | Required | Platform |
+| ------ | -------- | -------- |
+| string | No       | iOS      |
 
 ## `text`
 

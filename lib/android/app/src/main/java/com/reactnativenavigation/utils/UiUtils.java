@@ -11,6 +11,7 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 public class UiUtils {
     private static final int DEFAULT_TOOLBAR_HEIGHT = 56;
@@ -49,7 +50,7 @@ public class UiUtils {
         if (view.getHeight() > 0 && view.getWidth() > 0) {
             task.run();
         } else {
-            view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
                     if (view.getHeight() > 0 && view.getWidth() > 0) {
@@ -57,8 +58,25 @@ public class UiUtils {
                         task.run();
                     }
                 }
-            });
+            };
+            runOnDetach(view, () -> view.getViewTreeObserver().removeOnGlobalLayoutListener(listener));
+            view.getViewTreeObserver().addOnGlobalLayoutListener(listener);
         }
+    }
+
+    public static void runOnDetach(View view, Runnable task) {
+        view.getViewTreeObserver().addOnWindowAttachListener(new ViewTreeObserver.OnWindowAttachListener() {
+            @Override
+            public void onWindowAttached() {
+
+            }
+
+            @Override
+            public void onWindowDetached() {
+                view.getViewTreeObserver().removeOnWindowAttachListener(this);
+                task.run();
+            }
+        });
     }
 
     public static void runOnMainThread(Runnable runnable) {
@@ -109,8 +127,11 @@ public class UiUtils {
 
     public static float dpToPx(Context context, float dp) {
         Resources resources = context.getResources();
-        DisplayMetrics metrics = resources.getDisplayMetrics();
-        return dp * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return dpToPx(resources.getDisplayMetrics(), dp);
+    }
+
+    public static float dpToPx(DisplayMetrics metrics, float dp) {
+        return dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     public static int dpToPx(Context context, int dp) {

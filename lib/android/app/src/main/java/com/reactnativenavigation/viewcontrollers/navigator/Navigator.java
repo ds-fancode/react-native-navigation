@@ -5,6 +5,7 @@ import android.app.PictureInPictureParams;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.Log;
+import android.content.res.Configuration;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -87,7 +88,7 @@ public class Navigator extends ParentController {
         pipNavigator.setContentLayout(contentLayout);
     }
 
-    public Navigator(final Activity activity, ChildControllersRegistry childRegistry, ModalStack modalStack, OverlayManager overlayManager, RootPresenter rootPresenter, ILogger logger) {
+    public Navigator(final Activity activity, ChildControllersRegistry childRegistry, ModalStack modalStack, OverlayManager overlayManager, RootPresenter rootPresenter) {
         super(activity, childRegistry, "navigator" + CompatUtils.generateViewId(), new Presenter(activity, new Options()), new Options());
         this.modalStack = modalStack;
         this.overlayManager = overlayManager;
@@ -158,15 +159,15 @@ public class Navigator extends ParentController {
 
     }
 
-
-    public void setRoot(final ViewController viewController, CommandListener commandListener, ReactInstanceManager reactInstanceManager) {
+    public void setRoot(final ViewController<?> appearing, CommandListener commandListener, ReactInstanceManager reactInstanceManager) {
         previousRoot = root;
         modalStack.destroy();
         final boolean removeSplashView = isRootNotCreated();
         if (isRootNotCreated()) getView();
-        root = viewController;
+        final ViewController<?> disappearing = previousRoot;
+        root = appearing;
         root.setOverlay(new RootOverlay(getActivity(), contentLayout));
-        rootPresenter.setRoot(root, defaultOptions, new CommandListenerAdapter(commandListener) {
+        rootPresenter.setRoot(appearing, disappearing, defaultOptions, new CommandListenerAdapter(commandListener) {
             @Override
             public void onSuccess(String childId) {
                 root.onViewDidAppear();
@@ -295,6 +296,10 @@ public class Navigator extends ParentController {
         overlayManager.dismiss(overlaysLayout, componentId, listener);
     }
 
+    public void dismissAllOverlays(CommandListener listener) {
+        overlayManager.dismissAll(overlaysLayout, listener);
+    }
+
     @Nullable
     @Override
     public ViewController findController(String id) {
@@ -319,6 +324,13 @@ public class Navigator extends ParentController {
         } else if (listener != null) {
             listener.onError("Failed to execute stack command. Stack " + fromId + " not found.");
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        modalStack.onConfigurationChanged(newConfig);
+        overlayManager.onConfigurationChanged(newConfig);
+        super.onConfigurationChanged(newConfig);
     }
 
     public void updatePIPState(PIPStates newPIPState) {
@@ -420,5 +432,13 @@ public class Navigator extends ParentController {
 
     public PIPStates getPipMode() {
         return this.pipNavigator.getPipStates();
+    }
+
+    public void onHostPause() {
+        super.onViewDisappear();
+    }
+
+    public void onHostResume() {
+        super.onViewDidAppear();
     }
 }

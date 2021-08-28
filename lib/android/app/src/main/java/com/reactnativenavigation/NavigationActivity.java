@@ -22,6 +22,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.PermissionAwareActivity;
 import com.facebook.react.modules.core.PermissionListener;
+import com.reactnativenavigation.options.Options;
+import com.reactnativenavigation.viewcontrollers.overlay.OverlayManager;
+import com.reactnativenavigation.viewcontrollers.viewcontroller.RootPresenter;
 import com.reactnativenavigation.react.CommandListenerAdapter;
 import com.reactnativenavigation.react.JsDevReloadHandler;
 import com.reactnativenavigation.react.ReactGateway;
@@ -50,19 +53,20 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         if (isFinishing()) {
             return;
         }
-
         if (navigator == null || navigator.getPipMode() != PIPStates.NATIVE_MOUNTED) {
+
             navigator = new Navigator(this,
                     new ChildControllersRegistry(),
                     new ModalStack(this),
                     new OverlayManager(),
-                    new RootPresenter(this),
+                    new RootPresenter(),
                     logger
             );
             addDefaultSplashLayout();
             navigator.bindViews();
             getReactGateway().onActivityCreated(this);
         }
+    }
 
         getApplication().registerActivityLifecycleCallbacks(lifecycleCallback);
 
@@ -72,6 +76,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         getReactGateway().onConfigurationChanged(this, newConfig);
+        navigator.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -198,7 +203,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     @Override
     public boolean onKeyUp(final int keyCode, final KeyEvent event) {
-        return getReactGateway().onKeyUp(keyCode) || super.onKeyUp(keyCode, event);
+        return getReactGateway().onKeyUp(this, keyCode) || super.onKeyUp(keyCode, event);
     }
 
     public void handleExit() {

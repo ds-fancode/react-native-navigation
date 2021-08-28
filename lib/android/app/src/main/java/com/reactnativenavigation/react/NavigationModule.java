@@ -55,6 +55,12 @@ public class NavigationModule extends ReactContextBaseJavaModule {
         this.layoutFactory = layoutFactory;
         reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
             @Override
+            public void onHostPause() {
+                super.onHostPause();
+                navigator().onHostPause();
+            }
+
+            @Override
             public void onHostResume() {
                 eventEmitter = new EventEmitter(reactContext);
                 navigator().setEventEmitter(eventEmitter);
@@ -64,6 +70,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
                         navigator().getChildRegistry(),
                         ((NavigationApplication) activity().getApplication()).getExternalComponents()
                 );
+                navigator().onHostResume();
             }
         });
     }
@@ -79,15 +86,24 @@ public class NavigationModule extends ReactContextBaseJavaModule {
         promise.resolve(LaunchArgsParser.parse(activity()));
     }
 
-    @ReactMethod
-    public void getNavigationConstants(Promise promise) {
+    private WritableMap createNavigationConstantsMap() {
         ReactApplicationContext ctx = getReactApplicationContext();
         WritableMap constants = Arguments.createMap();
         constants.putString(Constants.BACK_BUTTON_JS_KEY, Constants.BACK_BUTTON_ID);
         constants.putDouble(Constants.BOTTOM_TABS_HEIGHT_KEY, Constants.BOTTOM_TABS_HEIGHT);
         constants.putDouble(Constants.STATUS_BAR_HEIGHT_KEY, pxToDp(ctx, StatusBarUtils.getStatusBarHeight(ctx)));
         constants.putDouble(Constants.TOP_BAR_HEIGHT_KEY, pxToDp(ctx, UiUtils.getTopBarHeight(ctx)));
-        promise.resolve(constants);
+        return constants;
+    }
+
+    @ReactMethod
+    public void getNavigationConstants(Promise promise) {
+        promise.resolve(createNavigationConstantsMap());
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public WritableMap getNavigationConstantsSync() {
+        return createNavigationConstantsMap();
     }
 
     @ReactMethod
@@ -207,6 +223,11 @@ public class NavigationModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void dismissOverlay(String commandId, String componentId, Promise promise) {
         handle(() -> navigator().dismissOverlay(componentId, new NativeCommandListener("dismissOverlay", commandId, promise, eventEmitter, now)));
+    }
+
+    @ReactMethod
+    public void dismissAllOverlays(String commandId, Promise promise) {
+        handle(() -> navigator().dismissAllOverlays(new NativeCommandListener("dismissAllOverlays", commandId, promise, eventEmitter, now)));
     }
 
     @ReactMethod

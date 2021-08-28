@@ -1,5 +1,6 @@
 #import "RNNComponentPresenter.h"
 #import "RNNComponentViewController.h"
+#import "RNNReactTitleView.h"
 #import "RNNTitleViewHelper.h"
 #import "UIViewController+LayoutProtocol.h"
 #import "UIViewController+RNNOptions.h"
@@ -12,6 +13,7 @@
 @property(nonatomic, strong) RNNNavigationOptions *options;
 @property(nonatomic, strong) UIViewController *boundViewController;
 @property(nonatomic, strong) RNNReactComponentRegistry *componentRegistry;
+@property(nonatomic, strong) id buttonsPresenter;
 
 @end
 
@@ -19,13 +21,15 @@
 
 - (void)setUp {
     [super setUp];
+    self.buttonsPresenter = [OCMockObject niceMockForClass:[RNNButtonsPresenter class]];
     self.componentRegistry = [OCMockObject partialMockForObject:[RNNReactComponentRegistry new]];
-    self.uut = [[RNNComponentPresenter alloc]
-        initWithComponentRegistry:self.componentRegistry
-                   defaultOptions:[[RNNNavigationOptions alloc] initEmptyOptions]];
+    self.uut =
+        [[RNNComponentPresenter alloc] initWithComponentRegistry:self.componentRegistry
+                                                  defaultOptions:[RNNNavigationOptions emptyOptions]
+                                                buttonsPresenter:self.buttonsPresenter];
     self.boundViewController = [OCMockObject partialMockForObject:[RNNComponentViewController new]];
     [self.uut bindViewController:self.boundViewController];
-    self.options = [[RNNNavigationOptions alloc] initEmptyOptions];
+    self.options = [RNNNavigationOptions emptyOptions];
 }
 
 - (void)testApplyOptions_backgroundImageDefaultNilShouldNotAddSubview {
@@ -60,6 +64,86 @@
     XCTAssertFalse(self.boundViewController.navigationItem.hidesBackButton);
 }
 
+- (void)testApplyOptions_defaultAnimateLeftButtonsFalse {
+    RNNButtonOptions *button = [RNNButtonOptions new];
+    self.options.topBar.leftButtons = @[ button ];
+    [[self.buttonsPresenter expect] applyLeftButtons:self.options.topBar.leftButtons
+                                        defaultColor:OCMArg.any
+                                defaultDisabledColor:OCMArg.any
+                                            animated:NO];
+    [self.uut applyOptions:self.options];
+    [self.buttonsPresenter verify];
+}
+
+- (void)testApplyOptions_defaultAnimateRightButtonsFalse {
+    RNNButtonOptions *button = [RNNButtonOptions new];
+    self.options.topBar.rightButtons = @[ button ];
+    [[self.buttonsPresenter expect] applyRightButtons:self.options.topBar.rightButtons
+                                         defaultColor:OCMArg.any
+                                 defaultDisabledColor:OCMArg.any
+                                             animated:NO];
+    [self.uut applyOptions:self.options];
+    [self.buttonsPresenter verify];
+}
+
+- (void)testApplyOptions_animateLeftButtons {
+    self.options.topBar.animateLeftButtons = [Bool withValue:YES];
+    RNNButtonOptions *button = [RNNButtonOptions new];
+    self.options.topBar.leftButtons = @[ button ];
+    [[self.buttonsPresenter expect] applyLeftButtons:self.options.topBar.leftButtons
+                                        defaultColor:OCMArg.any
+                                defaultDisabledColor:OCMArg.any
+                                            animated:YES];
+    [self.uut applyOptions:self.options];
+    [self.buttonsPresenter verify];
+}
+
+- (void)testApplyOptions_animateRightButtons {
+    self.options.topBar.animateRightButtons = [Bool withValue:YES];
+    RNNButtonOptions *button = [RNNButtonOptions new];
+    self.options.topBar.rightButtons = @[ button ];
+    [[self.buttonsPresenter expect] applyRightButtons:self.options.topBar.rightButtons
+                                         defaultColor:OCMArg.any
+                                 defaultDisabledColor:OCMArg.any
+                                             animated:YES];
+    [self.uut applyOptions:self.options];
+    [self.buttonsPresenter verify];
+}
+
+- (void)testMergeOptions_animateLeftButtons {
+    RNNNavigationOptions *mergeOptions = RNNNavigationOptions.emptyOptions;
+    mergeOptions.topBar.animateLeftButtons = [Bool withValue:YES];
+    RNNButtonOptions *button = [RNNButtonOptions new];
+    mergeOptions.topBar.leftButtons = @[ button ];
+
+    [[self.buttonsPresenter expect]
+            applyLeftButtons:[OCMArg checkWithBlock:^BOOL(NSArray *buttons) {
+              return buttons.firstObject == button;
+            }]
+                defaultColor:OCMArg.any
+        defaultDisabledColor:OCMArg.any
+                    animated:YES];
+    [self.uut mergeOptions:mergeOptions resolvedOptions:RNNNavigationOptions.emptyOptions];
+    [self.buttonsPresenter verify];
+}
+
+- (void)testMergeOptions_animateRightButtons {
+    RNNNavigationOptions *mergeOptions = RNNNavigationOptions.emptyOptions;
+    mergeOptions.topBar.animateRightButtons = [Bool withValue:YES];
+    RNNButtonOptions *button = [RNNButtonOptions new];
+    mergeOptions.topBar.rightButtons = @[ button ];
+
+    [[self.buttonsPresenter expect]
+           applyRightButtons:[OCMArg checkWithBlock:^BOOL(NSArray *buttons) {
+             return buttons.firstObject == button;
+           }]
+                defaultColor:OCMArg.any
+        defaultDisabledColor:OCMArg.any
+                    animated:YES];
+    [self.uut mergeOptions:mergeOptions resolvedOptions:RNNNavigationOptions.emptyOptions];
+    [self.buttonsPresenter verify];
+}
+
 - (void)testApplyOptions_drawBehindTabBarTrueWhenVisibleFalse {
     self.options.bottomTabs.visible = [[Bool alloc] initWithValue:@(0)];
     [[(id)self.boundViewController expect] setDrawBehindBottomTabs:YES];
@@ -73,12 +157,6 @@
         setInterceptTouchOutside:YES];
     [self.uut applyOptions:self.options];
     [(id)self.boundViewController verify];
-}
-
-- (void)testBindViewControllerShouldCreateNavigationButtonsCreator {
-    RNNComponentPresenter *presenter = [[RNNComponentPresenter alloc] init];
-    [presenter bindViewController:self.boundViewController];
-    XCTAssertNotNil(presenter.navigationButtons);
 }
 
 - (void)testApplyOptionsOnInit_TopBarDrawUnder_true {
@@ -140,7 +218,7 @@
     RNNComponentViewController *boundViewController = [RNNComponentViewController new];
     RNNLayoutInfo *layoutInfo = [self createLayoutInfoWithComponentId:@"componentId"];
     boundViewController.layoutInfo = layoutInfo;
-    boundViewController.defaultOptions = [[RNNNavigationOptions alloc] initEmptyOptions];
+    boundViewController.defaultOptions = [RNNNavigationOptions emptyOptions];
     [self.uut bindViewController:boundViewController];
 
     self.options.topBar.title.component = [[RNNComponentOptions alloc]
@@ -163,7 +241,7 @@
 - (void)testRenderComponentsCreateReactViewFromDefaultOptions {
     RNNComponentViewController *boundViewController = [RNNComponentViewController new];
     boundViewController.layoutInfo = [self createLayoutInfoWithComponentId:@"componentId"];
-    self.uut.defaultOptions = [[RNNNavigationOptions alloc] initEmptyOptions];
+    self.uut.defaultOptions = [RNNNavigationOptions emptyOptions];
     [self.uut bindViewController:boundViewController];
 
     self.uut.defaultOptions.topBar.title.component = [[RNNComponentOptions alloc]
@@ -196,16 +274,14 @@
     component.componentId = [[Text alloc] initWithValue:@"someId"];
     _options.topBar.title.component = component;
 
-    [self.uut mergeOptions:_options
-           resolvedOptions:[[RNNNavigationOptions alloc] initEmptyOptions]];
+    [self.uut mergeOptions:_options resolvedOptions:[RNNNavigationOptions emptyOptions]];
     XCTAssertNotNil(self.boundViewController.navigationItem.titleView);
     XCTAssertEqual(self.boundViewController.navigationItem.titleView, mockTitle);
 
     [[mockTitle expect] removeFromSuperview];
-    _options = [[RNNNavigationOptions alloc] initEmptyOptions];
+    _options = [RNNNavigationOptions emptyOptions];
     _options.topBar.title.text = [[Text alloc] initWithValue:@""];
-    [self.uut mergeOptions:_options
-           resolvedOptions:[[RNNNavigationOptions alloc] initEmptyOptions]];
+    [self.uut mergeOptions:_options resolvedOptions:[RNNNavigationOptions emptyOptions]];
     XCTAssertNotEqual(self.boundViewController.navigationItem.titleView, mockTitle);
     [mockTitle verify];
 }
@@ -224,15 +300,13 @@
     component.componentId = [[Text alloc] initWithValue:@"someId"];
     _options.topBar.title.component = component;
 
-    [self.uut mergeOptions:_options
-           resolvedOptions:[[RNNNavigationOptions alloc] initEmptyOptions]];
+    [self.uut mergeOptions:_options resolvedOptions:[RNNNavigationOptions emptyOptions]];
     XCTAssertNotNil(self.boundViewController.navigationItem.titleView);
     XCTAssertEqual(self.boundViewController.navigationItem.titleView, mockTitle);
 
-    _options = [[RNNNavigationOptions alloc] initEmptyOptions];
+    _options = [RNNNavigationOptions emptyOptions];
     _options.bottomTabs.visible = [[Bool alloc] initWithBOOL:NO];
-    [self.uut mergeOptions:_options
-           resolvedOptions:[[RNNNavigationOptions alloc] initEmptyOptions]];
+    [self.uut mergeOptions:_options resolvedOptions:[RNNNavigationOptions emptyOptions]];
     XCTAssertEqual(self.boundViewController.navigationItem.titleView, mockTitle);
 }
 

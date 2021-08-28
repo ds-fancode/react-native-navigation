@@ -3,6 +3,7 @@ package com.reactnativenavigation.views.element
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -16,6 +17,7 @@ import com.reactnativenavigation.options.LayoutAnimation
 import com.reactnativenavigation.options.NestedAnimationsOptions
 import com.reactnativenavigation.utils.ViewTags
 import com.reactnativenavigation.utils.ViewUtils
+import com.reactnativenavigation.utils.removeFromParent
 import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController
 import java.util.*
 
@@ -149,8 +151,8 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
                 }
     }
 
-    private fun createElementTransitionAnimators(transitions: List<ElementTransition>): List<AnimatorSet> {
-        val animators: MutableList<AnimatorSet> = ArrayList()
+    private fun createElementTransitionAnimators(transitions: List<ElementTransition>): List<Animator> {
+        val animators: MutableList<Animator> = ArrayList()
         for (transition in transitions) {
             animators.add(transition.createAnimators())
         }
@@ -176,6 +178,7 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
     private fun reparent(transition: Transition) {
         with(transition) {
             val loc = ViewUtils.getLocationOnScreen(view)
+
             val biologicalParent = view.parent as ViewGroup
             view.setTag(R.id.original_parent, biologicalParent)
             view.setTag(R.id.original_layout_params, view.layoutParams)
@@ -192,6 +195,7 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
             val lp = FrameLayout.LayoutParams(view.layoutParams)
             lp.topMargin = loc.y
             lp.leftMargin = loc.x
+            lp.gravity = Gravity.NO_GRAVITY
             lp.width = view.width
             lp.height = view.height
             addToOverlay(viewController, view, lp)
@@ -199,7 +203,7 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
     }
 
     private fun returnToOriginalParent(element: View) {
-        ViewUtils.removeFromParent(element)
+        element.removeFromParent()
         element.top = ViewTags.get(element, R.id.original_top)
         element.bottom = ViewTags.get(element, R.id.original_bottom)
         element.right = ViewTags.get(element, R.id.original_right)

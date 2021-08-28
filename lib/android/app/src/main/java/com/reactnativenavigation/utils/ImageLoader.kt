@@ -7,7 +7,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.StrictMode
-import android.view.View
 import androidx.core.content.ContextCompat
 import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper
 import com.reactnativenavigation.R
@@ -25,7 +24,7 @@ open class ImageLoader {
     }
 
     open fun getBackButtonIcon(context: Activity): Drawable? {
-        val isRTL = context.window.decorView.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val isRTL = context.window.decorView.isRTL()
         return ContextCompat.getDrawable(context, if (isRTL) R.drawable.ic_arrow_back_black_rtl_24dp else R.drawable.ic_arrow_back_black_24dp)
     }
 
@@ -72,7 +71,7 @@ open class ImageLoader {
             }
         }
         if (drawable == null) throw RuntimeException("Could not load image $source")
-        return drawable
+        return drawable.mutate()
     }
 
     @Throws(IOException::class)

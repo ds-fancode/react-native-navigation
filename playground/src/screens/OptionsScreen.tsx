@@ -1,11 +1,10 @@
 import React from 'react';
 import { NavigationComponentProps } from 'react-native-navigation';
-
-import Root from '../components/Root';
 import Button from '../components/Button';
+import Root from '../components/Root';
 import Navigation from '../services/Navigation';
-import Screens from './Screens';
 import testIDs from '../testIDs';
+import Screens from './Screens';
 
 const {
   CHANGE_TITLE_BTN,
@@ -17,6 +16,8 @@ const {
   SHOW_YELLOW_BOX_BTN,
   SET_REACT_TITLE_VIEW,
   GOTO_BUTTONS_SCREEN,
+  GOTO_SEARCHBAR_SCREEN,
+  GOTO_SEARCHBAR_MODAL,
 } = testIDs;
 
 interface Props extends NavigationComponentProps {}
@@ -67,6 +68,18 @@ export default class Options extends React.Component<Props> {
         />
         <Button label="StatusBar" onPress={this.statusBarScreen} />
         <Button
+          platform={'ios'}
+          testID={GOTO_SEARCHBAR_SCREEN}
+          label="Search Bar"
+          onPress={this.searchBarScreen}
+        />
+        <Button
+          platform={'ios'}
+          testID={GOTO_SEARCHBAR_MODAL}
+          label="Search Bar Modal"
+          onPress={this.searchBarModal}
+        />
+        <Button
           label="Toggle Navigation bar visibility"
           platform="android"
           onPress={this.toggleAndroidNavigationBar}
@@ -79,6 +92,7 @@ export default class Options extends React.Component<Props> {
     Navigation.mergeOptions(this, {
       topBar: {
         title: {
+          alignment: 'center',
           text: 'Title Changed',
         },
       },
@@ -95,6 +109,24 @@ export default class Options extends React.Component<Props> {
     Navigation.mergeOptions(this, {
       topBar: {
         visible: true,
+      },
+    });
+
+  hideSearchBar = () =>
+    Navigation.mergeOptions(this, {
+      topBar: {
+        searchBar: {
+          visible: false,
+        },
+      },
+    });
+
+  showSearchBar = () =>
+    Navigation.mergeOptions(this, {
+      topBar: {
+        searchBar: {
+          visible: true,
+        },
       },
     });
 
@@ -131,11 +163,30 @@ export default class Options extends React.Component<Props> {
   setReactTitleView = () =>
     Navigation.mergeOptions(this, {
       topBar: {
+        rightButtons: [
+          {
+            id: 'ONE',
+            text: 'One',
+          },
+          {
+            id: 'ROUND',
+            component: {
+              id: 'ROUND_COMPONENT',
+              name: Screens.RoundButton,
+              passProps: {
+                title: 'Two',
+                timesCreated: 1,
+              },
+            },
+          },
+        ],
+        leftButtons: [],
         title: {
           component: {
             name: Screens.ReactTitleView,
-            alignment: 'center',
+            alignment: 'fill',
             passProps: {
+              clickable: true,
               text: 'Press Me',
             },
           },
@@ -144,6 +195,10 @@ export default class Options extends React.Component<Props> {
     });
 
   statusBarScreen = () => Navigation.showModal(Screens.StatusBar);
+
+  searchBarScreen = () => Navigation.push(this, Screens.SearchBar, {});
+
+  searchBarModal = () => Navigation.showModal(Screens.SearchBarModal);
 
   pushButtonsScreen = () =>
     Navigation.push(this, Screens.Buttons, {

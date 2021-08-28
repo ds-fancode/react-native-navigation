@@ -27,7 +27,7 @@ interface NativeCommandsModule {
   showOverlay(commandId: string, layout: object): Promise<any>;
 
   dismissOverlay(commandId: string, componentId: string): Promise<any>;
-
+  dismissAllOverlays(commandId: string): Promise<any>;
   getLaunchArgs(commandId: string): Promise<any>;
 
   pushAsPIP(commandId: string, onComponentId: string, component: object): Promise<any>;
@@ -98,6 +98,10 @@ export class NativeCommandsSender {
 
   dismissOverlay(commandId: string, componentId: string) {
     return this.nativeCommandsModule.dismissOverlay(commandId, componentId);
+  }
+
+  dismissAllOverlays(commandId: string) {
+    return this.nativeCommandsModule.dismissAllOverlays(commandId);
   }
 
   getLaunchArgs(commandId: string) {

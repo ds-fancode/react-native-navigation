@@ -3,6 +3,7 @@ package com.reactnativenavigation.views.bottomtabs;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.view.View;
 import android.widget.LinearLayout;
 
 import com.aurelhubert.ahbottomnavigation.AHBottomNavigation;
@@ -75,6 +76,7 @@ public class BottomTabs extends AHBottomNavigation {
         }
     }
 
+
     @Override
     public void setTitleState(TitleState titleState) {
         if (getTitleState() != titleState) super.setTitleState(titleState);
@@ -91,10 +93,11 @@ public class BottomTabs extends AHBottomNavigation {
         this.setVisibility(VISIBLE);
         super.restoreBottomNavigation(withAnimation);
     }
+
     @Override
     public void hideBottomNavigation(boolean withAnimation) {
         super.hideBottomNavigation(withAnimation);
-        this.setVisibility(INVISIBLE);
+        setVisibility(View.GONE);
     }
 
     public void setText(int index, String text) {
@@ -122,7 +125,7 @@ public class BottomTabs extends AHBottomNavigation {
     }
 
     public void setLayoutDirection(LayoutDirection direction) {
-         LinearLayout tabsContainer = findChildByClass(this, LinearLayout.class);
+        LinearLayout tabsContainer = findChildByClass(this, LinearLayout.class);
         if (tabsContainer != null) tabsContainer.setLayoutDirection(direction.get());
     }
 

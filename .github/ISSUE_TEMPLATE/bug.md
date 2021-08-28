@@ -8,7 +8,7 @@ labels: 'triage: bug, needs triage'
 
 (A clear and concise description of what the bug is)
 
-### Have you read the [Contributing Guidelines on issues](https://wix.github.io/react-native-navigation/docs/meta-contributing)?
+### Have you read the [Contributing Guidelines on issues](https://wix.github.io/react-native-navigation/docs/meta-contributing/)?
 
 (Write your answer here.)
 
@@ -68,4 +68,17 @@ labels: 'triage: bug, needs triage'
     * You might figure out the issues yourself as you work on extracting it.
 
   Thanks for helping us help you!
+-->
+
+### Are you willing to resolve this issue by submitting a Pull Request?
+
+<!-- Put "✅" (:white_check_mark:) to one of these options, left "✖️" (:heavy_multiplication_x:) others: -->
+
+ - ✅  &nbsp; Yes, I have the time, and I know how to start.
+ - ✖️  &nbsp; Yes, I have the time, but I don't know how to start. I would need guidance.
+ - ✖️  &nbsp; No, I don’t have the time and I’m okay to wait for the community / maintainers to resolve this issue.
+
+<!--
+  Remember that first-time contributors are welcome! 🙌 Feel free to reach us out on https://discord.gg/DhkZjq2
+  👋 Have a great day and thank you for the bug report!
 -->
