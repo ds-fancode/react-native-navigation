@@ -66,11 +66,11 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             navigator.bindViews();
             getReactGateway().onActivityCreated(this);
         }
-    }
-
         getApplication().registerActivityLifecycleCallbacks(lifecycleCallback);
-
     }
+
+
+
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {

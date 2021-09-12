@@ -20,6 +20,7 @@ import androidx.annotation.RequiresApi;
 
 import com.reactnativenavigation.options.Options;
 import com.reactnativenavigation.options.PIPActionButton;
+import com.reactnativenavigation.options.StackAnimationOptions;
 import com.reactnativenavigation.react.CommandListener;
 import com.reactnativenavigation.utils.CompatUtils;
 import com.reactnativenavigation.utils.Functions;
@@ -110,7 +111,7 @@ public class PIPNavigator extends ParentController<PIPContainer> {
             }
         }
         if (this.childController.options.animations.pipIn.enabled.isTrueOrUndefined() && !toNative) {
-            this.animator.pipIn(floatingLayout, this.childController, this.childController.options, () -> {
+            this.animator.pipIn(this.childController, this.childController.options, new ArrayList<>(), () -> {
                 updatePIPStateInternal(PIPStates.CUSTOM_COMPACT);
             });
         } else {
@@ -118,15 +119,17 @@ public class PIPNavigator extends ParentController<PIPContainer> {
         }
     }
 
+
     public void restorePIP(Functions.Func1<ViewController> task) {
         if (this.childController != null) {
             pipFloatingLayout.cancelAnimations();
             pipFloatingLayout.initiateRestore();
             updatePIPStateInternal(PIPStates.RESTORE_START);
             if (this.childController.options.animations.pipOut.enabled.isTrueOrUndefined() && !wasDirectLaunchToNative) {
-                this.animator.pipOut(this.pipFloatingLayout,
+                this.animator.pipOut(
                         this.childController,
                         this.childController.options,
+                        new ArrayList<>(),
                         () -> {
                             updatePIPStateInternal(NOT_STARTED);
                             this.childController.detachView();

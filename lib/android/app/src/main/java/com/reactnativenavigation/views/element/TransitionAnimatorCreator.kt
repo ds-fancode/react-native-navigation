@@ -14,7 +14,6 @@ import com.facebook.react.uimanager.ViewGroupManager
 import com.reactnativenavigation.R
 import com.reactnativenavigation.options.AnimationOptions
 import com.reactnativenavigation.options.LayoutAnimation
-import com.reactnativenavigation.options.NestedAnimationsOptions
 import com.reactnativenavigation.utils.ViewTags
 import com.reactnativenavigation.utils.ViewUtils
 import com.reactnativenavigation.utils.removeFromParent
@@ -22,76 +21,30 @@ import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController
 import java.util.*
 
 open class TransitionAnimatorCreator @JvmOverloads constructor(private val transitionSetCreator: TransitionSetCreator = TransitionSetCreator()) {
-    open class CreatorResultCallback(private val callback: CreatorResultCallback? = null) {
-        open fun onError() {
-            callback?.onError()
-        }
 
-        open fun onSuccess(transitionAnimators: AnimatorSet) {
-
-        }
-    }
-
-    suspend fun create(animation: LayoutAnimation, fadeAnimation: AnimationOptions, fromScreen: ViewController<*>, toScreen: ViewController<*>): AnimatorSet {
+    suspend fun create(
+        animation: LayoutAnimation,
+        fadeAnimation: AnimationOptions,
+        fromScreen: ViewController<*>,
+        toScreen: ViewController<*>
+    ): AnimatorSet {
         val transitions = transitionSetCreator.create(animation, fromScreen, toScreen)
         return createAnimator(fadeAnimation, transitions)
     }
 
-    suspend fun createPIPTransitions(animation: NestedAnimationsOptions, fadeAnimation: AnimationOptions, pipContainer: View, pipScreen: ViewController<*>, callback: CreatorResultCallback) {
-        /*val elementTransitions = animation.elementTransitions
-        if (!elementTransitions.hasValue()) {
-            onAnimatorsCreated.run(TransitionSet())
-            return
-        }
-        val transitionSet = TransitionSet()
-        for (transitionOptions in elementTransitions.transitions) {
-            val transition = ElementTransition(transitionOptions)
-            ReactFindViewUtil.findView(pipContainer, transition.id)?.let {
-                transition.view = it
-                transition.viewController = pipScreen
-                transitionSet.add(transition)
-            }
-            if (transition.isValid()) continue
-        }*/
-        transitionSetCreator.createPIPIn(pipContainer, animation, pipScreen) {
-            if (it.isEmpty) {
-                callback.onError()
-            } else {
-                callback.onSuccess(createAnimator(fadeAnimation, it))
-            }
-        }
+    suspend fun createPIP(
+        animation: LayoutAnimation,
+        fadeAnimation: AnimationOptions,
+        pipScreen: ViewController<*>
+    ): AnimatorSet {
+        val transitions = transitionSetCreator.createPIP(animation, pipScreen)
+        return createAnimator(fadeAnimation, transitions)
     }
 
-    suspend fun createPIPOutTransitions(animation: NestedAnimationsOptions, fadeAnimation: AnimationOptions, pipContainer: View, pipScreen: ViewController<*>, callback: CreatorResultCallback) {
-        /*val elementTransitions = animation.elementTransitions
-        if (!elementTransitions.hasValue()) {
-            onAnimatorsCreated.run(TransitionSet())
-            return
-        }
-        val transitionSet = TransitionSet()
-        for (transitionOptions in elementTransitions.transitions) {
-            val transition = ElementTransition(transitionOptions)
-            ReactFindViewUtil.findView(pipContainer, transition.id)?.let {
-                transition.view = it
-                transition.viewController = pipScreen
-                transitionSet.add(transition)
-                transition.setValueDy(View.X, pipContainer.x, 0.toFloat())
-                transition.setValueDy(View.Y, pipContainer.y, 0.toFloat())
-            }
-            if (transition.isValid()) continue
-        }
-        onAnimatorsCreated.run(transitionSet)*/
-        transitionSetCreator.createPIPOut(pipContainer, animation, pipScreen) {
-            if (it.isEmpty) {
-                callback.onError()
-            } else {
-                callback.onSuccess(createAnimator(fadeAnimation, it))
-            }
-        }
-    }
-
-
-    private fun createAnimator(fadeAnimation: AnimationOptions, transitions: TransitionSet): AnimatorSet {
+    private fun createAnimator(
+        fadeAnimation: AnimationOptions,
+        transitions: TransitionSet
+    ): AnimatorSet {
         recordIndices(transitions)
         reparentViews(transitions)
         val animators = ArrayList<Animator>()
@@ -100,7 +53,11 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
         setAnimatorsDuration(animators, fadeAnimation)
         return AnimatorSet().apply {
             playTogether(animators)
-            doOnStart { transitions.validSharedElementTransitions.forEach { it.view.visibility = View.VISIBLE } }
+            doOnStart {
+                transitions.validSharedElementTransitions.forEach {
+                    it.view.visibility = View.VISIBLE
+                }
+            }
             doOnEnd { restoreViewsToOriginalState(transitions) }
             doOnCancel { restoreViewsToOriginalState(transitions) }
         }
@@ -113,7 +70,10 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
         }
     }
 
-    private fun setAnimatorsDuration(animators: Collection<Animator>, fadeAnimation: AnimationOptions) {
+    private fun setAnimatorsDuration(
+        animators: Collection<Animator>,
+        fadeAnimation: AnimationOptions
+    ) {
         for (animator in animators) {
             if (animator is AnimatorSet) {
                 setAnimatorsDuration(animator.childAnimations, fadeAnimation)
@@ -125,10 +85,10 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
 
     private fun reparentViews(transitions: TransitionSet) {
         transitions.transitions
-                .sortedBy { getZIndex(it.view) }
-                .forEach { reparent(it) }
+            .sortedBy { getZIndex(it.view) }
+            .forEach { reparent(it) }
         transitions.validSharedElementTransitions
-                .forEach { it.view.visibility = View.INVISIBLE }
+            .forEach { it.view.visibility = View.INVISIBLE }
     }
 
     private fun createSharedElementTransitionAnimators(transitions: List<SharedElementTransition>): List<AnimatorSet> {
@@ -141,14 +101,14 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
 
     private fun createSharedElementAnimator(transition: SharedElementTransition): AnimatorSet {
         return transition
-                .createAnimators()
-                .apply {
-                    addListener(object : AnimatorListenerAdapter() {
-                        override fun onAnimationStart(animation: Animator) {
-                            transition.from.alpha = 0f
-                        }
-                    })
-                }
+            .createAnimators()
+            .apply {
+                addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator) {
+                        transition.from.alpha = 0f
+                    }
+                })
+            }
     }
 
     private fun createElementTransitionAnimators(transitions: List<ElementTransition>): List<Animator> {
@@ -219,8 +179,8 @@ open class TransitionAnimatorCreator @JvmOverloads constructor(private val trans
     }
 
     private fun getZIndex(view: View) = ViewGroupManager.getViewZIndex(view)
-            ?: ViewTags.get(view, R.id.original_z_index)
-            ?: 0
+        ?: ViewTags.get(view, R.id.original_z_index)
+        ?: 0
 
     private fun addToOverlay(vc: ViewController<*>, element: View, lp: FrameLayout.LayoutParams) {
         val viewController = vc.parentController ?: vc

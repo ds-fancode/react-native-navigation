@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.content.Context
+import android.view.View
 import androidx.annotation.RestrictTo
 import androidx.annotation.VisibleForTesting
 import androidx.core.animation.doOnEnd
@@ -26,7 +27,11 @@ open class StackAnimator @JvmOverloads constructor(
     private val transitionAnimatorCreator: TransitionAnimatorCreator = TransitionAnimatorCreator()
 ) : BaseAnimator(context) {
     @VisibleForTesting
-    val runningPIPAnimations: MutableMap<ViewController<*>, AnimatorSet> = HashMap()
+    val runningPipInAnimations: MutableMap<ViewController<*>, AnimatorSet> = HashMap()
+
+    @VisibleForTesting
+    val runningPipOutAnimations: MutableMap<ViewController<*>, AnimatorSet> = HashMap()
+
 
     @VisibleForTesting
     val runningPushAnimations: MutableMap<ViewController<*>, AnimatorSet> = HashMap()
@@ -94,21 +99,19 @@ open class StackAnimator @JvmOverloads constructor(
         }
     }
 
-    fun push(
-        appearing: ViewController<*>,
-        disappearing: ViewController<*>,
+    fun pipIn(
+        pipScreen: ViewController<*>,
         resolvedOptions: Options,
         additionalAnimations: List<Animator>,
         onAnimationEnd: Runnable
     ) {
-        val set = createPIPAnimator(appearing, onAnimationEnd)
-        runningPIPAnimations[appearing] = set
+        val set = createPIPInAnimator(pipScreen, onAnimationEnd)
+        runningPipInAnimations[pipScreen] = set
         if (resolvedOptions.animations.pipIn.sharedElements.hasValue()) {
-            pushWithElementTransition(appearing, disappearing, resolvedOptions, set)
+            pipInWithElementTransition(pipScreen, resolvedOptions, set)
         } else {
-            pushWithoutElementTransitions(
-                appearing,
-                disappearing,
+            pipInWithoutElementTransitions(
+                pipScreen,
                 resolvedOptions,
                 set,
                 additionalAnimations
@@ -116,21 +119,6 @@ open class StackAnimator @JvmOverloads constructor(
         }
     }
 
-    open fun pipIn(pipContainer: View, pip: ViewController<*>, options: Options, onAnimationEnd: Runnable?) {
-        GlobalScope.launch(Dispatchers.Main.immediate) {
-            val set = createPIPAnimator(pip, onAnimationEnd!!)
-            runningPIPAnimations[pipContainer] = set
-            if (options.animations.pipIn.elementTransitions.hasValue()) {
-                pipInElementTransition(pipContainer, pip, options, set, object : TransitionAnimatorCreator.CreatorResultCallback() {
-                    override fun onError() {
-                        pipInWithoutElementTransitions(pipContainer, pip, options, set)
-                    }
-                })
-            } else {
-                pipInWithoutElementTransitions(pipContainer, pip, options, set)
-            }
-        }
-    }
 
     open fun pop(
         appearing: ViewController<*>,
@@ -146,6 +134,25 @@ open class StackAnimator @JvmOverloads constructor(
             animatePop(
                 appearing,
                 disappearing,
+                disappearingOptions,
+                additionalAnimations,
+                onAnimationEnd
+            )
+        }
+    }
+
+    open fun pipOut(
+        pipScreen: ViewController<*>,
+        disappearingOptions: Options,
+        additionalAnimations: List<Animator>,
+        onAnimationEnd: Runnable
+    ) {
+        if (runningPipInAnimations.containsKey(pipScreen)) {
+            runningPipInAnimations[pipScreen]!!.cancel()
+            onAnimationEnd.run()
+        } else {
+            animatePipOut(
+                pipScreen,
                 disappearingOptions,
                 additionalAnimations,
                 onAnimationEnd
@@ -176,6 +183,27 @@ open class StackAnimator @JvmOverloads constructor(
         }
     }
 
+    private fun animatePipOut(
+       pipScreen: ViewController<*>,
+        disappearingOptions: Options,
+        additionalAnimations: List<Animator>,
+        onAnimationEnd: Runnable
+    ) {
+        GlobalScope.launch(Dispatchers.Main.immediate) {
+            val set = createPipOutAnimator(pipScreen, onAnimationEnd)
+            if (disappearingOptions.animations.pipOut.sharedElements.hasValue()) {
+                pipOutWithElementTransitions(pipScreen, disappearingOptions, set)
+            } else {
+                pipOutWithoutElementTransitions(
+                    pipScreen,
+                    disappearingOptions,
+                    set,
+                    additionalAnimations
+                )
+            }
+        }
+    }
+
     private suspend fun popWithElementTransitions(
         appearing: ViewController<*>,
         disappearing: ViewController<*>,
@@ -187,6 +215,25 @@ open class StackAnimator @JvmOverloads constructor(
         val transitionAnimators =
             transitionAnimatorCreator.create(pop, fade.content.exit, disappearing, appearing)
         set.playTogether(fade.content.exit.getAnimation(disappearing.view), transitionAnimators)
+        transitionAnimators.listeners.forEach { listener: Animator.AnimatorListener ->
+            set.addListener(
+                listener
+            )
+        }
+        transitionAnimators.removeAllListeners()
+        set.start()
+    }
+
+    private suspend fun pipOutWithElementTransitions(
+        pipScreen: ViewController<*>,
+        resolvedOptions: Options,
+        set: AnimatorSet
+    ) {
+        val pipOut = resolvedOptions.animations.pipOut
+        val fade = if (pipOut.content.exit.isFadeAnimation()) pipOut else FadeAnimation
+        val transitionAnimators =
+            transitionAnimatorCreator.createPIP(pipOut, fade.content.exit,pipScreen)
+        set.playTogether(fade.content.exit.getAnimation(pipScreen.view), transitionAnimators)
         transitionAnimators.listeners.forEach { listener: Animator.AnimatorListener ->
             set.addListener(
                 listener
@@ -219,27 +266,22 @@ open class StackAnimator @JvmOverloads constructor(
         set.start()
     }
 
-    private fun createPopAnimator(
-        disappearing: ViewController<*>,
-        onAnimationEnd: Runnable
-    ): AnimatorSet {
-        val set = createAnimatorSet()
-        runningPopAnimations[disappearing] = set
-        set.addListener(object : AnimatorListenerAdapter() {
-            private var cancelled = false
-            override fun onAnimationCancel(animation: Animator) {
-                if (!runningPopAnimations.contains(disappearing)) return
-                cancelled = true
-                runningPopAnimations.remove(disappearing)
-            }
-
-            override fun onAnimationEnd(animation: Animator) {
-                if (!runningPopAnimations.contains(disappearing)) return
-                runningPopAnimations.remove(disappearing)
-                if (!cancelled) onAnimationEnd.run()
-            }
-        })
-        return set
+    private fun pipOutWithoutElementTransitions(
+        pipScreen: ViewController<*>,
+        disappearingOptions: Options,
+        set: AnimatorSet,
+        additionalAnimations: List<Animator>
+    ) {
+        val pipOut = disappearingOptions.animations.pipOut
+        val animators = mutableListOf(
+            pipOut.content.enter.getAnimation(
+                pipScreen.view,
+                getDefaultPushAnimation(pipScreen.view)
+            )
+        )
+        animators.addAll(additionalAnimations)
+        set.playTogether(animators.toList())
+        set.start()
     }
 
     private fun createPushAnimator(
@@ -267,7 +309,7 @@ open class StackAnimator @JvmOverloads constructor(
         return set
     }
 
-    private fun createPIPAnimator(
+    private fun createPIPInAnimator(
         appearing: ViewController<*>,
         onAnimationEnd: Runnable
     ): AnimatorSet {
@@ -275,18 +317,64 @@ open class StackAnimator @JvmOverloads constructor(
         set.addListener(object : AnimatorListenerAdapter() {
             private var isCancelled = false
             override fun onAnimationCancel(animation: Animator) {
-                if (!runningPushAnimations.contains(appearing)) return
+                if (!runningPipInAnimations.contains(appearing)) return
                 isCancelled = true
-                runningPIPAnimations.remove(appearing)
+                runningPipInAnimations.remove(appearing)
                 onAnimationEnd.run()
             }
 
             override fun onAnimationEnd(animation: Animator) {
-                if (!runningPIPAnimations.contains(appearing)) return
+                if (!runningPipInAnimations.contains(appearing)) return
                 if (!isCancelled) {
-                    runningPIPAnimations.remove(appearing)
+                    runningPipInAnimations.remove(appearing)
                     onAnimationEnd.run()
                 }
+            }
+        })
+        return set
+    }
+
+    private fun createPopAnimator(
+        disappearing: ViewController<*>,
+        onAnimationEnd: Runnable
+    ): AnimatorSet {
+        val set = createAnimatorSet()
+        runningPopAnimations[disappearing] = set
+        set.addListener(object : AnimatorListenerAdapter() {
+            private var cancelled = false
+            override fun onAnimationCancel(animation: Animator) {
+                if (!runningPopAnimations.contains(disappearing)) return
+                cancelled = true
+                runningPopAnimations.remove(disappearing)
+            }
+
+            override fun onAnimationEnd(animation: Animator) {
+                if (!runningPopAnimations.contains(disappearing)) return
+                runningPopAnimations.remove(disappearing)
+                if (!cancelled) onAnimationEnd.run()
+            }
+        })
+        return set
+    }
+
+    private fun createPipOutAnimator(
+        disappearing: ViewController<*>,
+        onAnimationEnd: Runnable
+    ): AnimatorSet {
+        val set = createAnimatorSet()
+        runningPipOutAnimations[disappearing] = set
+        set.addListener(object : AnimatorListenerAdapter() {
+            private var cancelled = false
+            override fun onAnimationCancel(animation: Animator) {
+                if (!runningPipOutAnimations.contains(disappearing)) return
+                cancelled = true
+                runningPipOutAnimations.remove(disappearing)
+            }
+
+            override fun onAnimationEnd(animation: Animator) {
+                if (!runningPipOutAnimations.contains(disappearing)) return
+                runningPipOutAnimations.remove(disappearing)
+                if (!cancelled) onAnimationEnd.run()
             }
         })
         return set
@@ -340,6 +428,32 @@ open class StackAnimator @JvmOverloads constructor(
         set.start()
     }
 
+    private fun pipInWithElementTransition(
+        pipScreen: ViewController<*>,
+        options: Options,
+        set: AnimatorSet
+    ) = GlobalScope.launch(Dispatchers.Main.immediate) {
+        pipScreen.setWaitForRender(Bool(true))
+        pipScreen.view.alpha = 0f
+        pipScreen.awaitRender()
+        val fade =
+            if (options.animations.pipIn.content.enter.isFadeAnimation()) options.animations.pipIn.content.enter else FadeAnimation.content.enter
+        val transitionAnimators =
+            transitionAnimatorCreator.createPIP(
+                options.animations.pipIn,
+                fade,
+                pipScreen
+            )
+        set.playTogether(fade.getAnimation(pipScreen.view), transitionAnimators)
+        transitionAnimators.listeners.forEach { listener: Animator.AnimatorListener ->
+            set.addListener(
+                listener
+            )
+        }
+        transitionAnimators.removeAllListeners()
+        set.start()
+    }
+
     private fun pushWithoutElementTransitions(
         appearing: ViewController<*>,
         disappearing: ViewController<*>,
@@ -371,6 +485,34 @@ open class StackAnimator @JvmOverloads constructor(
         }
     }
 
+    private fun pipInWithoutElementTransitions(
+        pipScreen: ViewController<*>,
+        resolvedOptions: Options,
+        set: AnimatorSet,
+        additionalAnimations: List<Animator>
+    ) {
+        val push = resolvedOptions.animations.pipIn
+        if (push.waitForRender.isTrue) {
+            pipScreen.view.alpha = 0f
+            pipScreen.addOnAppearedListener {
+                pipScreen.view.alpha = 1f
+                animatePIPWithoutElementTransitions(
+                    set,
+                    push,
+                    pipScreen,
+                    additionalAnimations
+                )
+            }
+        } else {
+            animatePIPWithoutElementTransitions(
+                set,
+                push,
+                pipScreen,
+                additionalAnimations
+            )
+        }
+    }
+
     private fun animatePushWithoutElementTransitions(
         set: AnimatorSet,
         push: StackAnimationOptions,
@@ -395,156 +537,21 @@ open class StackAnimator @JvmOverloads constructor(
         set.start()
     }
 
-    private suspend fun pipInElementTransition(
-        pipContainer: View,
-        pipIn: ViewController<*>,
-        options: Options,
+    private fun animatePIPWithoutElementTransitions(
         set: AnimatorSet,
-        callback: TransitionAnimatorCreator.CreatorResultCallback
+        pip: StackAnimationOptions,
+        pipScreen: ViewController<*>,
+        additionalAnimations: List<Animator>
     ) {
-        val fade =
-            if (options.animations.pipIn.content.isFadeAnimation()) options.animations.pipIn.content else FadeAnimation().content
-        transitionAnimatorCreator.createPIPTransitions(
-            options.animations.pipIn,
-            fade,
-            pipContainer,
-            pipIn,
-            object : TransitionAnimatorCreator.CreatorResultCallback(callback) {
-                override fun onSuccess(transitionAnimators: AnimatorSet) {
-                    set.playTogether(
-                        options.animations.pipIn.content.getAnimation(
-                            pipContainer,
-                            getDefaultPopAnimation(pipContainer)
-                        ), transitionAnimators
-                    )
-                    transitionAnimators.listeners.forEach { listener: Animator.AnimatorListener ->
-                        set.addListener(
-                            listener
-                        )
-                    }
-                    transitionAnimators.removeAllListeners()
-                    set.start()
-                }
-            }
-        )
-    }
-
-    private fun pipInWithoutElementTransitions(
-        pipContainer: View,
-        appearing: ViewController<*>,
-        options: Options,
-        set: AnimatorSet
-    ) {
-        if (options.animations.pipIn.waitForRender.isTrue) {
-            appearing.view.alpha = 0f
-            appearing.addOnAppearedListener {
-                appearing.view.alpha = 1f
-                set.playTogether(
-                    options.animations.pipIn.content.getAnimation(
-                        pipContainer,
-                        getDefaultPopAnimation(pipContainer)
-                    )
-                )
-                set.start()
-            }
-        } else {
-            set.playTogether(
-                options.animations.pipIn.content.getAnimation(
-                    pipContainer,
-                    getDefaultPopAnimation(pipContainer)
-                )
+        val animators = mutableListOf(
+            pip.content.exit.getAnimation(
+                pipScreen.view,
+                getDefaultPopAnimation(pipScreen.view)
             )
-            set.start()
-        }
-    }
-
-    open fun pipOut(
-        pipContainer: View,
-        pip: ViewController<*>,
-        options: Options,
-        onAnimationEnd: Runnable?
-    ) {
-        GlobalScope.launch(Dispatchers.Main.immediate) {
-            val set = createPIPAnimator(pip, onAnimationEnd!!)
-            runningPIPAnimations[pipContainer] = set
-            if (options.animations.pipOut.elementTransitions.hasValue()) {
-                pipOutElementTransition(
-                    pipContainer,
-                    pip,
-                    options,
-                    set,
-                    object : TransitionAnimatorCreator.CreatorResultCallback() {
-                        override fun onError() {
-                            pipOutWithoutElementTransitions(pipContainer, pip, options, set)
-                        }
-                    })
-            } else {
-                pipOutWithoutElementTransitions(pipContainer, pip, options, set)
-            }
-        }
-    }
-
-    private fun pipOutWithoutElementTransitions(
-        pipContainer: View,
-        appearing: ViewController<*>,
-        options: Options,
-        set: AnimatorSet
-    ) {
-        if (options.animations.pipOut.waitForRender.isTrue) {
-            appearing.view.alpha = 0f
-            appearing.addOnAppearedListener {
-                appearing.view.alpha = 1f
-                set.playTogether(
-                    options.animations.pipOut.content.getAnimation(
-                        pipContainer,
-                        getDefaultPushAnimation(pipContainer)
-                    )
-                )
-                set.start()
-            }
-        } else {
-            set.playTogether(
-                options.animations.pipOut.content.getAnimation(
-                    pipContainer,
-                    getDefaultPushAnimation(pipContainer)
-                )
-            )
-            set.start()
-        }
-    }
-
-    private suspend fun pipOutElementTransition(
-        pipContainer: View,
-        pipOut: ViewController<*>,
-        options: Options,
-        set: AnimatorSet,
-        callback: TransitionAnimatorCreator.CreatorResultCallback
-    ) {
-        val fade =
-            if (options.animations.pipOut.content.isFadeAnimation()) options.animations.pipOut.content else FadeAnimation().content
-        transitionAnimatorCreator.createPIPOutTransitions(
-            options.animations.pipOut,
-            fade,
-            pipContainer,
-            pipOut,
-            object : TransitionAnimatorCreator.CreatorResultCallback(callback) {
-                override fun onSuccess(transitionAnimators: AnimatorSet) {
-                    set.playTogether(
-                        options.animations.pipOut.content.getAnimation(
-                            pipContainer,
-                            getDefaultPopAnimation(pipContainer)
-                        ), transitionAnimators
-                    )
-                    transitionAnimators.listeners.forEach { listener: Animator.AnimatorListener ->
-                        set.addListener(
-                            listener
-                        )
-                    }
-                    transitionAnimators.removeAllListeners()
-                    set.start()
-                }
-            }
         )
+        animators.addAll(additionalAnimations)
+        set.playTogether(animators.toList())
+        set.start()
     }
 
     private fun animateSetRoot(
