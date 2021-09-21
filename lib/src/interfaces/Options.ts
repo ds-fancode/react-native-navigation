@@ -1,5 +1,5 @@
 // tslint:disable jsdoc-format
-import { ImageRequireSource, Insets } from 'react-native';
+import { ImageRequireSource, ImageSourcePropType, Insets } from 'react-native';
 import { PIPActionButton } from './Layout';
 
 // TODO: Import ColorValue instead when upgrading @types/react-native to 0.63+
@@ -76,10 +76,12 @@ export type Interpolation =
       allowsOverdamping?: boolean;
       initialVelocity?: number;
     };
+
 interface ThemeColor {
   light?: string | symbol;
   dark?: string | symbol;
 }
+
 export interface OptionsSplitView {
   /**
    * Master view display mode
@@ -1481,15 +1483,15 @@ export interface Options {
 
   pipOptions?: PIPOptions;
   /**
-     * Animation used for navigation commands that modify the layout
-     * hierarchy can be controlled in options.
-     *
-     * Animations can be modified per command and it's also possible
-     * to change the default animation for each command.
-     *
-     * Example:
-     ```js
-     setRoot: {
+   * Animation used for navigation commands that modify the layout
+   * hierarchy can be controlled in options.
+   *
+   * Animations can be modified per command and it's also possible
+   * to change the default animation for each command.
+   *
+   * Example:
+   ```js
+   setRoot: {
   y: {
     from: 1000,
     to: 0,
@@ -1504,8 +1506,8 @@ export interface Options {
     interpolation: 'accelerate'
   }
 }
-     ```
-     */
+   ```
+   */
   animations?: AnimationOptions;
 
   /**
