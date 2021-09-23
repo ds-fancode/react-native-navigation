@@ -107,16 +107,22 @@ open class StackAnimator @JvmOverloads constructor(
     ) {
         val set = createPIPInAnimator(pipScreen, onAnimationEnd)
         runningPipInAnimations[pipScreen] = set
-        if (resolvedOptions.animations.pipIn.sharedElements.hasValue()) {
-            pipInWithElementTransition(pipScreen, resolvedOptions, set)
-        } else {
-            pipInWithoutElementTransitions(
-                pipScreen,
-                resolvedOptions,
-                set,
-                additionalAnimations
-            )
-        }
+        pipInWithoutElementTransitions(
+            pipScreen,
+            resolvedOptions,
+            set,
+            additionalAnimations
+        )
+        /* if (resolvedOptions.animations.pipIn.elementTransitions.hasValue()) {
+             pipInWithElementTransition(pipScreen, resolvedOptions, set)
+         } else {
+             pipInWithoutElementTransitions(
+                 pipScreen,
+                 resolvedOptions,
+                 set,
+                 additionalAnimations
+             )
+         }*/
     }
 
 
@@ -184,23 +190,29 @@ open class StackAnimator @JvmOverloads constructor(
     }
 
     private fun animatePipOut(
-       pipScreen: ViewController<*>,
+        pipScreen: ViewController<*>,
         disappearingOptions: Options,
         additionalAnimations: List<Animator>,
         onAnimationEnd: Runnable
     ) {
         GlobalScope.launch(Dispatchers.Main.immediate) {
             val set = createPipOutAnimator(pipScreen, onAnimationEnd)
-            if (disappearingOptions.animations.pipOut.sharedElements.hasValue()) {
-                pipOutWithElementTransitions(pipScreen, disappearingOptions, set)
-            } else {
-                pipOutWithoutElementTransitions(
-                    pipScreen,
-                    disappearingOptions,
-                    set,
-                    additionalAnimations
-                )
-            }
+            pipOutWithoutElementTransitions(
+                pipScreen.view.parent as View,
+                disappearingOptions,
+                set,
+                additionalAnimations
+            )
+            /*if (disappearingOptions.animations.pipOut.elementTransitions.hasValue()) {
+                 pipOutWithElementTransitions(pipScreen, disappearingOptions, set)
+             } else {
+                 pipOutWithoutElementTransitions(
+                     pipScreen.view.parent as View,
+                     disappearingOptions,
+                     set,
+                     additionalAnimations
+                 )
+             }*/
         }
     }
 
@@ -230,10 +242,13 @@ open class StackAnimator @JvmOverloads constructor(
         set: AnimatorSet
     ) {
         val pipOut = resolvedOptions.animations.pipOut
-        val fade = if (pipOut.content.exit.isFadeAnimation()) pipOut else FadeAnimation
+        val fade = if (pipOut.content.enter.isFadeAnimation()) pipOut else FadeAnimation
         val transitionAnimators =
-            transitionAnimatorCreator.createPIP(pipOut, fade.content.exit,pipScreen)
-        set.playTogether(fade.content.exit.getAnimation(pipScreen.view), transitionAnimators)
+            transitionAnimatorCreator.createPIP(pipOut, fade.content.enter, pipScreen)
+        set.playTogether(
+            fade.content.enter.getAnimation(pipScreen.view.parent as View),
+            transitionAnimators
+        )
         transitionAnimators.listeners.forEach { listener: Animator.AnimatorListener ->
             set.addListener(
                 listener
@@ -267,7 +282,7 @@ open class StackAnimator @JvmOverloads constructor(
     }
 
     private fun pipOutWithoutElementTransitions(
-        pipScreen: ViewController<*>,
+        pipScreen: View,
         disappearingOptions: Options,
         set: AnimatorSet,
         additionalAnimations: List<Animator>
@@ -275,8 +290,8 @@ open class StackAnimator @JvmOverloads constructor(
         val pipOut = disappearingOptions.animations.pipOut
         val animators = mutableListOf(
             pipOut.content.enter.getAnimation(
-                pipScreen.view,
-                getDefaultPushAnimation(pipScreen.view)
+                pipScreen,
+                getDefaultPushAnimation(pipScreen)
             )
         )
         animators.addAll(additionalAnimations)
@@ -433,18 +448,11 @@ open class StackAnimator @JvmOverloads constructor(
         options: Options,
         set: AnimatorSet
     ) = GlobalScope.launch(Dispatchers.Main.immediate) {
-        pipScreen.setWaitForRender(Bool(true))
-        pipScreen.view.alpha = 0f
-        pipScreen.awaitRender()
         val fade =
-            if (options.animations.pipIn.content.enter.isFadeAnimation()) options.animations.pipIn.content.enter else FadeAnimation.content.enter
+            if (options.animations.pipIn.content.exit.isFadeAnimation()) options.animations.pipIn.content.exit else FadeAnimation.content.exit
         val transitionAnimators =
-            transitionAnimatorCreator.createPIP(
-                options.animations.pipIn,
-                fade,
-                pipScreen
-            )
-        set.playTogether(fade.getAnimation(pipScreen.view), transitionAnimators)
+            transitionAnimatorCreator.createPIP(options.animations.pipIn, fade, pipScreen)
+        set.playTogether(fade.getAnimation(pipScreen.view.parent as View), transitionAnimators)
         transitionAnimators.listeners.forEach { listener: Animator.AnimatorListener ->
             set.addListener(
                 listener
@@ -491,25 +499,28 @@ open class StackAnimator @JvmOverloads constructor(
         set: AnimatorSet,
         additionalAnimations: List<Animator>
     ) {
-        val push = resolvedOptions.animations.pipIn
-        if (push.waitForRender.isTrue) {
-            pipScreen.view.alpha = 0f
-            pipScreen.addOnAppearedListener {
-                pipScreen.view.alpha = 1f
+        if (pipScreen.view.parent != null && pipScreen.view.parent is View) {
+            val pipHostView = pipScreen.view.parent as View
+            val push = resolvedOptions.animations.pipIn
+            if (push.waitForRender.isTrue) {
+                pipHostView.alpha = 0f
+                pipScreen.addOnAppearedListener {
+                    pipHostView.alpha = 1f
+                    animatePIPWithoutElementTransitions(
+                        set,
+                        push,
+                        pipHostView,
+                        additionalAnimations
+                    )
+                }
+            } else {
                 animatePIPWithoutElementTransitions(
                     set,
                     push,
-                    pipScreen,
+                    pipHostView,
                     additionalAnimations
                 )
             }
-        } else {
-            animatePIPWithoutElementTransitions(
-                set,
-                push,
-                pipScreen,
-                additionalAnimations
-            )
         }
     }
 
@@ -540,13 +551,13 @@ open class StackAnimator @JvmOverloads constructor(
     private fun animatePIPWithoutElementTransitions(
         set: AnimatorSet,
         pip: StackAnimationOptions,
-        pipScreen: ViewController<*>,
+        pipScreen: View,
         additionalAnimations: List<Animator>
     ) {
         val animators = mutableListOf(
             pip.content.exit.getAnimation(
-                pipScreen.view,
-                getDefaultPopAnimation(pipScreen.view)
+                pipScreen,
+                getDefaultPopAnimation(pipScreen)
             )
         )
         animators.addAll(additionalAnimations)
