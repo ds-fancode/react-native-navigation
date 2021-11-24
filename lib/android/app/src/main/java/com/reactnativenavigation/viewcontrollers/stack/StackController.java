@@ -444,12 +444,12 @@ public class StackController extends ParentController<StackLayout> {
 
     @Override
     public boolean handleBack(CommandListener listener) {
-        if (canPop()) {
-            if (presenter.shouldPopOnHardwareButtonPress(peek())) {
-                pop(Options.EMPTY, listener);
-            } else {
-                sendOnNavigationButtonPressed(HARDWARE_BACK_BUTTON_ID);
-            }
+        if(stack.size() > 0 && !presenter.shouldPopOnHardwareButtonPress(peek()))
+        {
+            sendOnNavigationButtonPressed(HARDWARE_BACK_BUTTON_ID);
+            return true;
+        } else if (canPop() && presenter.shouldPopOnHardwareButtonPress(peek())) {
+            pop(Options.EMPTY, listener);
             return true;
         }
         return false;
@@ -457,7 +457,7 @@ public class StackController extends ParentController<StackLayout> {
 
     @VisibleForTesting()
     boolean canPop() {
-        return stack.size() >= 1;
+        return stack.size() > 1;
     }
 
     @NonNull
