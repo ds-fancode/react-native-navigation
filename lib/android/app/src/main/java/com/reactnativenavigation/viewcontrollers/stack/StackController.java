@@ -457,7 +457,7 @@ public class StackController extends ParentController<StackLayout> {
 
     @VisibleForTesting()
     boolean canPop() {
-        return stack.size() > 1;
+        return stack.size() >= 1;
     }
 
     @NonNull
