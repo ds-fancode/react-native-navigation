@@ -5,9 +5,8 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
+import com.reactnativenavigation.RNNTappableViewManager;
 import com.reactnativenavigation.options.LayoutFactory;
-
-import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -18,6 +17,8 @@ public class NavigationPackage implements ReactPackage {
 
     private ReactNativeHost reactNativeHost;
 
+    private NavigationModule navigationModule;
+
     public NavigationPackage(final ReactNativeHost reactNativeHost) {
         this.reactNativeHost = reactNativeHost;
     }
@@ -25,17 +26,17 @@ public class NavigationPackage implements ReactPackage {
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        return singletonList(new NavigationModule(
-                        reactContext,
-                        reactNativeHost.getReactInstanceManager(),
-                        new LayoutFactory(reactNativeHost.getReactInstanceManager())
-                )
+        navigationModule = new NavigationModule(
+                reactContext,
+                reactNativeHost.getReactInstanceManager(),
+                new LayoutFactory(reactNativeHost.getReactInstanceManager())
         );
+        return singletonList(navigationModule);
     }
 
     @NonNull
     @Override
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+        return singletonList(new RNNTappableViewManager(navigationModule, reactNativeHost));
     }
 }

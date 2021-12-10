@@ -6,6 +6,7 @@ import { Store } from './components/Store';
 import { OptionProcessorsStore } from './processors/OptionProcessorsStore';
 import { ComponentRegistry } from './components/ComponentRegistry';
 import { Commands } from './commands/Commands';
+import { CommandsCreator } from './commands/CommandsCreator';
 import { LayoutTreeParser } from './commands/LayoutTreeParser';
 import { LayoutTreeCrawler } from './commands/LayoutTreeCrawler';
 import { EventsRegistry } from './events/EventsRegistry';
@@ -35,11 +36,12 @@ export class NavigationRoot {
   public readonly store: Store;
   private readonly optionProcessorsStore: OptionProcessorsStore;
   private readonly layoutProcessorsStore: LayoutProcessorsStore;
-  private readonly uniqueIdProvider: UniqueIdProvider;
+  public readonly uniqueIdProvider: UniqueIdProvider;
   private readonly componentRegistry: ComponentRegistry;
   private readonly layoutTreeParser: LayoutTreeParser;
   private readonly layoutTreeCrawler: LayoutTreeCrawler;
   private readonly commands: Commands;
+  public readonly commandsCreator: CommandsCreator;
   private readonly eventsRegistry: EventsRegistry;
   private readonly commandsObserver: CommandsObserver;
   private readonly componentEventsObserver: ComponentEventsObserver;
@@ -82,6 +84,16 @@ export class NavigationRoot {
     this.commands = new Commands(
       this.store,
       this.nativeCommandsSender,
+      this.layoutTreeParser,
+      this.layoutTreeCrawler,
+      this.commandsObserver,
+      this.uniqueIdProvider,
+      optionsProcessor,
+      layoutProcessor,
+      this.optionsCrawler
+    );
+    this.commandsCreator = new CommandsCreator(
+      this.store,
       this.layoutTreeParser,
       this.layoutTreeCrawler,
       this.commandsObserver,

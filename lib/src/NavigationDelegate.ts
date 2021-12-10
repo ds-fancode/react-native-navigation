@@ -11,7 +11,7 @@ import { NativeCommandsSender } from './adapters/NativeCommandsSender';
 import { NativeEventsReceiver } from './adapters/NativeEventsReceiver';
 
 export class NavigationDelegate {
-  private concreteNavigation: NavigationRoot;
+  public concreteNavigation: NavigationRoot;
   constructor() {
     this.concreteNavigation = this.createConcreteNavigation(
       new NativeCommandsSender(),
