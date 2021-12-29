@@ -156,7 +156,7 @@ public class BottomTabsController extends ParentController<BottomTabsLayout> imp
     public boolean handleBack(CommandListener listener) {
 
         final boolean childBack = !tabs.isEmpty() && tabs.get(bottomTabs.getCurrentItem()).handleBack(listener);
-        boolean resetToFirstTabOnBack = resolveCurrentOptions().bottomTabsOptions.resetToFirstTabOnBack.isFalse();
+        boolean resetToFirstTabOnBack = resolveCurrentOptions().bottomTabsOptions.resetToFirstTabOnBack.isTrue();
 
         if (!childBack && resetToFirstTabOnBack) {
 
