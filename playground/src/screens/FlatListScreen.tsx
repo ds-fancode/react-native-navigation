@@ -6,7 +6,7 @@ import {
   NavigationButtonPressedEvent,
   NavigationComponent,
   Options,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 
 const FakeListData: { data: FakeDataItem[] } = require('../assets/FakeListData');
 

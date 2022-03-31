@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationComponent, Modal as RNNModal } from '@dream11/react-native-navigation';
+import { NavigationComponent, Modal as RNNModal } from 'react-native-navigation';
 import last from 'lodash/last';
 import concat from 'lodash/concat';
 import forEach from 'lodash/forEach';

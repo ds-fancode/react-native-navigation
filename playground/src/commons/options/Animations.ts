@@ -3,7 +3,7 @@ import {
   ViewAnimationOptions,
   OptionsAnimationPropertyConfig,
   EnterExitAnimationOptions,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import { Dimensions } from 'react-native';
 import flags from '../../flags';
 

@@ -7,7 +7,7 @@ import {
   NavigationButtonPressedEvent,
   Options,
   OptionsTopBar,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import flags from '../flags';
 import testIDs from '../testIDs';
 

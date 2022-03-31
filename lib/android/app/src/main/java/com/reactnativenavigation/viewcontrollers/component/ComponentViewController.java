@@ -165,23 +165,15 @@ public class ComponentViewController extends ChildController<ComponentLayout> {
 
     @Override
     protected WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
-        final Insets systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-        int systemWindowInsetTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top +
-                insets.getInsets(WindowInsetsCompat.Type.navigationBars()).top -
-                systemBarsInsets.top;
-        int systemWindowInsetBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom +
-                insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom -
-                systemBarsInsets.bottom;
-
-        WindowInsetsCompat finalInsets = new WindowInsetsCompat.Builder()
-                .setInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime(),
-                        Insets.of(systemBarsInsets.left,
-                                systemWindowInsetTop,
-                                systemBarsInsets.right,
-                                Math.max(systemWindowInsetBottom - getBottomInset(), 0)))
-                .build();
-        ViewCompat.onApplyWindowInsets(view, finalInsets);
-        return insets;
+        final WindowInsetsCompat.Builder builder = new WindowInsetsCompat.Builder();
+                        final WindowInsetsCompat finalInsets = builder.setSystemWindowInsets(Insets.of(insets.getSystemWindowInsetLeft(),
+                                getActivity().getApplicationContext().getApplicationInfo().targetSdkVersion >= 30
+                                        && resolveCurrentOptions(presenter.defaultOptions).statusBar.isHiddenOrDrawBehind()
+                                        ? 0 : Math.max(insets.getSystemWindowInsetTop() - getTopInset(), 0),
+                                insets.getSystemWindowInsetRight(),
+                                Math.max(insets.getSystemWindowInsetBottom() - getBottomInset(), 0))).build();
+                        ViewCompat.onApplyWindowInsets(view, finalInsets);
+                        return finalInsets;
     }
 
     @Override

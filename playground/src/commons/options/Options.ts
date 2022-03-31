@@ -1,4 +1,4 @@
-import { Navigation, OptionsModalPresentationStyle } from '@dream11/react-native-navigation';
+import { Navigation, OptionsModalPresentationStyle } from 'react-native-navigation';
 import Colors from '../Colors';
 import animations from './Animations';
 

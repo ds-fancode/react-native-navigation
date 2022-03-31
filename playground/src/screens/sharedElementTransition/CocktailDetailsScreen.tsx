@@ -4,7 +4,7 @@ import {
   NavigationComponentProps,
   NavigationButtonPressedEvent,
   Options,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import Screens from '../Screens';
 import Navigation from '../../services/Navigation';
 import { CocktailItem } from '../../assets/cocktails';

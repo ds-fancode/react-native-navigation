@@ -4,7 +4,7 @@ import {
   Navigation,
   NavigationComponentProps,
   SearchBarUpdatedEvent,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import testIDs from '../testIDs';
 
 const ITEMS: { key: string }[] = [];

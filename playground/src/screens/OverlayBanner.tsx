@@ -1,10 +1,6 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
-import {
-  NavigationComponent,
-  NavigationComponentProps,
-  Options,
-} from '@dream11/react-native-navigation';
+import { NavigationComponent, NavigationComponentProps, Options } from 'react-native-navigation';
 import testIDs from '../testIDs';
 import Button from '../components/Button';
 import Navigation from '../services/Navigation';

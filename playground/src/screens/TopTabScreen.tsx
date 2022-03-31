@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { NavigationComponentProps } from '@dream11/react-native-navigation';
+import { NavigationComponentProps } from 'react-native-navigation';
 
 const FAB = 'fab';
 

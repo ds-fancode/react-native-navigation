@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Image, View, Text, TextInput } from 'react-native';
 import { ColorPalette, Switch } from 'react-native-ui-lib';
-import { NavigationComponentProps, Options } from '@dream11/react-native-navigation';
+import { NavigationComponentProps, Options } from 'react-native-navigation';
 import Root from '../components/Root';
 import Button from '../components/Button';
 import Navigation from '../services/Navigation';

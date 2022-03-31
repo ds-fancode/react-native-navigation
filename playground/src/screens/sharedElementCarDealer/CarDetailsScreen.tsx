@@ -5,7 +5,7 @@ import {
   NavigationFunctionComponent,
   OptionsModalPresentationStyle,
   OptionsModalTransitionStyle,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import { CarItem } from '../../assets/cars';
 import FastImage from 'react-native-fast-image';
 import Reanimated, { EasingNode, useValue } from 'react-native-reanimated';

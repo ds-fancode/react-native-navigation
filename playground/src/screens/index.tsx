@@ -1,6 +1,6 @@
 import React from 'react';
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
-import { Navigation } from '@dream11/react-native-navigation';
+import { Navigation } from 'react-native-navigation';
 import Screens from './Screens';
 
 function registerScreens() {

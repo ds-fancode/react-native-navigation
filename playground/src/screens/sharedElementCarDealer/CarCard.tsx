@@ -6,7 +6,7 @@ import FastImage from 'react-native-fast-image';
 import { CarItem } from '../../assets/cars';
 import { hexToRgba } from '../../commons/Colors';
 import PressableScale from '../../components/PressableScale';
-import { Navigation } from '@dream11/react-native-navigation';
+import { Navigation } from 'react-native-navigation';
 
 type CarCardProps = {
   car: CarItem;

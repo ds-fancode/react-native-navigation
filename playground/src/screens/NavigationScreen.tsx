@@ -4,7 +4,7 @@ import {
   NavigationComponent,
   NavigationComponentProps,
   OptionsModalPresentationStyle,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import Root from '../components/Root';
 import Button from '../components/Button';
 import Navigation from './../services/Navigation';

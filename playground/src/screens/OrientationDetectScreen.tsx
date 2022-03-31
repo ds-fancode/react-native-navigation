@@ -14,7 +14,7 @@ import {
   LayoutOrientation,
   NavigationComponent,
   Options,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import TestIDs from '../testIDs';
 
 interface Props extends NavigationComponentProps {

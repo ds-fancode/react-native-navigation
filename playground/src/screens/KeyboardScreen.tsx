@@ -4,7 +4,7 @@ import {
   NavigationComponentProps,
   NavigationComponent,
   ComponentDidAppearEvent,
-} from '@dream11/react-native-navigation';
+} from 'react-native-navigation';
 import Navigation from '../services/Navigation';
 import Button from '../components/Button';
 import Screens from './Screens';
