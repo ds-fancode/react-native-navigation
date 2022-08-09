@@ -259,6 +259,8 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         super.startActivity(intent);
     }
 
+    public void onSetRootSuccess() { }
+
     /*
     @Override
     public void startActivity(Intent intent) {
