@@ -170,8 +170,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,ts,tsx}": "eslint --fix",
-    "*.{h,m,mm}": "node ./scripts/check-clang-format"
+    "*.{js,ts,tsx}": "eslint --fix"
   },
   "detox": {
     "test-runner": "jest",
