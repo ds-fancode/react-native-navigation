@@ -104,7 +104,7 @@ class AppDelegateLinker {
     return content.replace(
       /RCTBridge.*];/,
       'RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];\n' +
-      '[ReactNativeNavigation bootstrapWithBridge:bridge];'
+        '[ReactNativeNavigation bootstrapWithBridge:bridge];'
     );
   }
 
@@ -146,13 +146,18 @@ class AppDelegateLinker {
 
     const toRemove = [
       /RCTRootView\s+\*rootView((.|\r|\s)*?)];\s+/,
+      /UIView \*rootView = RCTAppSetupDefaultRootView\(bridge, @".*", nil\);/,
       /if \(@available\(iOS 13\.0, \*\)\)\s{\s+ rootView.backgroundColor((.|\r)*)];\s+}\s+else {[^}]*}/,
       /self.window((.|\r)*)];\s+/,
       /UIViewController\s\*rootViewController((.|\r)*)];\s+/,
       /rootViewController\.view\s+=\s+rootView;\s+/,
       /self.window.rootViewController\s+=\s+rootViewController;\s+/,
       /\[self.window\s+makeKeyAndVisible];\s+/,
+      // Added from RN 0.69
+      /NSDictionary\s+\*initProps\s+=\s+\[self prepareInitialProps];\s+/,
+      /UIView \*rootView = RCTAppSetupDefaultRootView\(bridge, @".*", initProps\);/,
     ];
+
     let elementsRemovedCount = 0;
 
     toRemove.forEach((element) => {
@@ -169,7 +174,7 @@ class AppDelegateLinker {
         '   No elements could be removed. Check the manual installation docs to verify that everything is properly setup:\n   https://wix.github.io/react-native-navigation/docs/installing#native-installation'
       );
     } else {
-      throw new Error(
+      warnn(
         'Some elements were removed. Check the manual installation docs to verify that everything is properly setup:\n   https://wix.github.io/react-native-navigation/docs/installing#native-installation'
       );
     }
