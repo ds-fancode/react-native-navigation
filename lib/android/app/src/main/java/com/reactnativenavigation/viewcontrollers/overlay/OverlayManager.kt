@@ -63,7 +63,7 @@ class OverlayManager {
         if (isEmpty) overlaysContainer.visibility = View.GONE
     }
 
-    private val isEmpty: Boolean
+    val isEmpty: Boolean
         get() = size() == 0
 
     fun onHostPause() {

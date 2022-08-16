@@ -198,10 +198,6 @@ public class Navigator extends ParentController<ViewGroup> {
         }
     }
 
-    public void push(final String id, final ViewController<?> viewController, CommandListener listener) {
-        applyOnStack(id, listener, stack -> stack.push(viewController, listener));
-    }
-
     public void setStackRoot(String id, List<ViewController<?>> children, CommandListener listener) {
         applyOnStack(id, listener, stack -> stack.setRoot(children, listener));
     }
