@@ -186,9 +186,11 @@ public class Navigator extends ParentController {
     }
 
     private void notifySetRootSuccess() {
+        if (navigationActivity != null) {
             navigationActivity.onSetRootSuccess();
             navigationActivity = null;
         }
+    }
 
     public void mergeOptions(final String componentId, Options options) {
         ViewController target = findController(componentId);
