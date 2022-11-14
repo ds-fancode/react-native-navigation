@@ -15,6 +15,7 @@ import androidx.annotation.RestrictTo;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.facebook.react.ReactInstanceManager;
+import com.reactnativenavigation.NavigationActivity;
 import com.reactnativenavigation.options.Options;
 import com.reactnativenavigation.react.CommandListener;
 import com.reactnativenavigation.react.CommandListenerAdapter;
@@ -41,6 +42,7 @@ import java.util.List;
 
 
 public class Navigator extends ParentController {
+    private NavigationActivity navigationActivity;
     private PIPNavigator pipNavigator;
     private final ModalStack modalStack;
     private final OverlayManager overlayManager;
@@ -89,6 +91,7 @@ public class Navigator extends ParentController {
 
     public Navigator(final Activity activity, ChildControllersRegistry childRegistry, ModalStack modalStack, OverlayManager overlayManager, RootPresenter rootPresenter, ILogger logger) {
         super(activity, childRegistry, "navigator" + CompatUtils.generateViewId(), new Presenter(activity, new Options()), new Options());
+        this.navigationActivity = (NavigationActivity) activity;
         this.modalStack = modalStack;
         this.overlayManager = overlayManager;
         this.rootPresenter = rootPresenter;
@@ -170,11 +173,19 @@ public class Navigator extends ParentController {
             @Override
             public void onSuccess(String childId) {
                 root.onViewDidAppear();
+                notifySetRootSuccess();
                 if (removeSplashView) contentLayout.removeViewAt(0);
                 destroyPreviousRoot();
                 super.onSuccess(childId);
             }
         }, reactInstanceManager);
+    }
+
+    private void notifySetRootSuccess() {
+        if (navigationActivity != null) {
+            navigationActivity.onSetRootSuccess();
+            navigationActivity = null;
+        }
     }
 
     public void mergeOptions(final String componentId, Options options) {

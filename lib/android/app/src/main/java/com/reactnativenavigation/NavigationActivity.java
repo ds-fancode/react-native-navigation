@@ -251,6 +251,19 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         super.startActivity(intent);
     }
 
+    public void onSetRootSuccess() { }
+
+    /*
+    @Override
+    public void startActivity(Intent intent) {
+      navigatingToAnotherActivity = intent != null && intent.getAction() == null;
+        logger.log(Log.INFO, TAG, "startActivity " + navigatingToAnotherActivity);
+        if (intent != null) {
+            logger.log(Log.INFO, TAG, "startActivity " + intent.getAction());
+        }
+        super.startActivity(intent);
+    }*/
+
 
     public void onCatalystInstanceDestroy() {
         runOnUiThread(() -> navigator.destroyViews());
