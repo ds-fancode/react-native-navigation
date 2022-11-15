@@ -1,25 +1,17 @@
 #import "RNNBridgeManager.h"
 
-#import <React/RCTBridge.h>
-#import <React/RCTUIManager.h>
-
-#ifdef RN_FABRIC_ENABLED
-#import <React/RCTSurfacePresenter.h>
-#endif
-
 #import "RNNBridgeModule.h"
 #import "RNNComponentViewCreator.h"
 #import "RNNEventEmitter.h"
 #import "RNNLayoutManager.h"
+#import "RNNModalHostViewManagerHandler.h"
 #import "RNNReactComponentRegistry.h"
 #import "RNNReactRootViewCreator.h"
 #import "RNNSplashScreen.h"
+#import <React/RCTBridge.h>
+#import <React/RCTUIManager.h>
 
-@interface RNNBridgeManager () {
-#ifdef RN_FABRIC_ENABLED
-    RCTSurfacePresenter *_surfacePresenter;
-#endif
-}
+@interface RNNBridgeManager ()
 
 @property(nonatomic, strong, readwrite) RCTBridge *bridge;
 @property(nonatomic, strong, readwrite) RNNExternalComponentStore *store;
@@ -27,12 +19,11 @@
 @property(nonatomic, strong, readonly) RNNLayoutManager *layoutManager;
 @property(nonatomic, strong, readonly) RNNOverlayManager *overlayManager;
 @property(nonatomic, strong, readonly) RNNModalManager *modalManager;
+@property(nonatomic, strong, readonly) RNNModalHostViewManagerHandler *modalHostViewHandler;
 
 @end
 
 @implementation RNNBridgeManager {
-    NSDictionary *_launchOptions;
-    id<RCTBridgeDelegate> _delegate;
     RCTBridge *_bridge;
     UIWindow *_mainWindow;
 
@@ -41,13 +32,10 @@
     RNNCommandsHandler *_commandsHandler;
 }
 
-- (instancetype)initWithLaunchOptions:(NSDictionary *)launchOptions
-                    andBridgeDelegate:(id<RCTBridgeDelegate>)delegate
-                           mainWindow:(UIWindow *)mainWindow {
+- (instancetype)initWithBridge:(RCTBridge *)bridge mainWindow:(UIWindow *)mainWindow {
     if (self = [super init]) {
+        _bridge = bridge;
         _mainWindow = mainWindow;
-        _launchOptions = launchOptions;
-        _delegate = delegate;
 
         _overlayManager = [RNNOverlayManager new];
 
@@ -69,15 +57,6 @@
     return self;
 }
 
-- (void)initializeBridge {
-    _bridge = [[RCTBridge alloc] initWithDelegate:_delegate launchOptions:_launchOptions];
-
-#ifdef RN_FABRIC_ENABLED
-    _surfacePresenter = [[RCTSurfacePresenter alloc] initWithBridge:_bridge config:nil];
-    _bridge.surfacePresenter = _surfacePresenter;
-#endif
-}
-
 - (void)registerExternalComponent:(NSString *)name callback:(RNNExternalViewCreator)callback {
     [_store registerExternalComponent:name callback:callback];
 }
@@ -88,7 +67,8 @@
         [[RNNModalManagerEventHandler alloc] initWithEventEmitter:eventEmitter];
     _modalManager = [[RNNModalManager alloc] initWithBridge:bridge
                                                eventHandler:modalManagerEventHandler];
-
+    _modalHostViewHandler =
+        [[RNNModalHostViewManagerHandler alloc] initWithModalManager:_modalManager];
     _layoutManager = [[RNNLayoutManager alloc] init];
 
     id<RNNComponentViewCreator> rootViewCreator =
@@ -127,14 +107,17 @@
 
 - (void)onJavaScriptLoaded {
     [_commandsHandler setReadyToReceiveCommands:true];
+    [_modalHostViewHandler
+        connectModalHostViewManager:[self.bridge moduleForClass:RCTModalHostViewManager.class]];
     [[_bridge moduleForClass:[RNNEventEmitter class]] sendOnAppLaunched];
 }
 
 - (void)onBridgeWillReload {
-    [_overlayManager dismissAllOverlays];
-    [_modalManager dismissAllModalsSynchronosly];
-    [_componentRegistry clear];
-    UIApplication.sharedApplication.delegate.window.rootViewController = nil;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self->_overlayManager dismissAllOverlays];
+      [self->_componentRegistry clear];
+      UIApplication.sharedApplication.delegate.window.rootViewController = nil;
+    });
 }
 
 @end

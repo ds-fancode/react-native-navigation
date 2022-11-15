@@ -2,7 +2,7 @@ import { component, stack } from '../commons/Layouts';
 const SideMenuLeft = 'SideMenuLeft';
 const SideMenuCenter = 'SideMenuCenter';
 const SideMenuRight = 'SideMenuRight';
-const StatusBarOptions = 'StatusBarOptions';
+const SystemUiOptions = 'SystemUiOptions';
 const StatusBarFirstTab = 'StatusBarFirstTab';
 
 const Screens = {
@@ -10,9 +10,12 @@ const Screens = {
   CocktailDetailsScreen: 'CocktailDetailsScreen',
   CocktailsListScreen: 'CocktailsListScreen',
   CocktailsListMasterScreen: 'CocktailsListMasterScreen',
+  ImageGalleryListScreen: 'ImageGalleryListScreen',
+  ImageGalleryItemScreen: 'ImageGalleryItemScreen',
   CarDetailsScreen: 'CarDetailsScreen',
   CarStoryScreen: 'CarStoryScreen',
   CarsListScreen: 'CarsListScreen',
+  ImageFullScreenViewer: 'ImageFullScreenViewer',
   ContextScreen: 'ContextScreen',
   PIPScreen: 'PIPScreen',
   ExternalComponent: 'ExternalComponent',
@@ -22,12 +25,15 @@ const Screens = {
   ModalCommands: 'ModalCommands',
   StackCommands: 'StackCommands',
   Options: 'Options',
+  Components: 'Components',
   Pushed: 'Pushed',
+  BackButton: 'BackButton',
   SharedElement: 'SharedElement',
   Stack: 'Stack',
   SetRoot: 'SetRoot',
   Overlay: 'Overlay',
   OverlayAlert: 'OverlayAlert',
+  OverlayBanner: 'OverlayBanner',
   ScrollViewScreen: 'ScrollViewScreen',
   ScrollViewOverlay: 'ScrollViewOverlay',
   Lifecycle: 'Lifecycle',
@@ -53,7 +59,7 @@ const Screens = {
       center: component(SideMenuCenter),
     },
   },
-  StatusBar: {
+  SystemUi: {
     sideMenu: {
       left: component(
         SideMenuLeft,
@@ -65,7 +71,7 @@ const Screens = {
         },
         { marginTop: 20 }
       ),
-      center: stack(StatusBarOptions),
+      center: stack(SystemUiOptions),
       right: component(SideMenuRight),
     },
   },
@@ -114,8 +120,9 @@ const Screens = {
       ],
     },
   },
-  StatusBarOptions,
+  SystemUiOptions: SystemUiOptions,
   StatusBarFirstTab,
+  KeyboardScreen: 'KeyboardScreen',
   TopBarBackground: 'TopBarBackground',
   Toast: 'Toast',
   FlatListScreen: 'FlatListScreen',
@@ -123,6 +130,9 @@ const Screens = {
   Orientation: 'Orientation',
   OrientationDetect: 'OrientationDetect',
   Search: 'Search',
+  SearchBar: 'SearchBar',
+  SearchBarModal: 'SearchBarModal',
+  TopBar: 'TopBar',
 };
 
 export default Screens;

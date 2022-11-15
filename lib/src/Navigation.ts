@@ -26,42 +26,46 @@ import { ProcessorSubscription } from './interfaces/ProcessorSubscription';
 import { LayoutProcessor } from './processors/LayoutProcessor';
 import { LayoutProcessorsStore } from './processors/LayoutProcessorsStore';
 import { CommandName } from './interfaces/CommandName';
+import { OptionsCrawler } from './commands/OptionsCrawler';
+import { OptionsProcessor as OptionProcessor } from './interfaces/Processors';
 
 export class NavigationRoot {
   public readonly TouchablePreview = TouchablePreview;
 
-  private readonly store: Store;
+  public readonly store: Store;
   private readonly optionProcessorsStore: OptionProcessorsStore;
   private readonly layoutProcessorsStore: LayoutProcessorsStore;
-  private readonly nativeEventsReceiver: NativeEventsReceiver;
   private readonly uniqueIdProvider: UniqueIdProvider;
   private readonly componentRegistry: ComponentRegistry;
   private readonly layoutTreeParser: LayoutTreeParser;
   private readonly layoutTreeCrawler: LayoutTreeCrawler;
-  private readonly nativeCommandsSender: NativeCommandsSender;
   private readonly commands: Commands;
   private readonly eventsRegistry: EventsRegistry;
   private readonly commandsObserver: CommandsObserver;
   private readonly componentEventsObserver: ComponentEventsObserver;
   private readonly componentWrapper: ComponentWrapper;
+  private readonly optionsCrawler: OptionsCrawler;
 
-  constructor() {
+  constructor(
+    private readonly nativeCommandsSender: NativeCommandsSender,
+    private readonly nativeEventsReceiver: NativeEventsReceiver,
+    private readonly appRegistryService: AppRegistryService
+  ) {
     this.componentWrapper = new ComponentWrapper();
     this.store = new Store();
     this.optionProcessorsStore = new OptionProcessorsStore();
     this.layoutProcessorsStore = new LayoutProcessorsStore();
-    this.nativeEventsReceiver = new NativeEventsReceiver();
     this.uniqueIdProvider = new UniqueIdProvider();
     this.componentEventsObserver = new ComponentEventsObserver(
       this.nativeEventsReceiver,
       this.store
     );
-    const appRegistryService = new AppRegistryService();
+
     this.componentRegistry = new ComponentRegistry(
       this.store,
       this.componentEventsObserver,
       this.componentWrapper,
-      appRegistryService
+      this.appRegistryService
     );
     this.layoutTreeParser = new LayoutTreeParser(this.uniqueIdProvider);
     const optionsProcessor = new OptionsProcessor(
@@ -74,8 +78,8 @@ export class NavigationRoot {
     );
     const layoutProcessor = new LayoutProcessor(this.layoutProcessorsStore);
     this.layoutTreeCrawler = new LayoutTreeCrawler(this.store, optionsProcessor);
-    this.nativeCommandsSender = new NativeCommandsSender();
     this.commandsObserver = new CommandsObserver(this.uniqueIdProvider);
+    this.optionsCrawler = new OptionsCrawler(this.store, this.uniqueIdProvider);
     this.commands = new Commands(
       this.store,
       this.nativeCommandsSender,
@@ -84,7 +88,8 @@ export class NavigationRoot {
       this.commandsObserver,
       this.uniqueIdProvider,
       optionsProcessor,
-      layoutProcessor
+      layoutProcessor,
+      this.optionsCrawler
     );
     this.eventsRegistry = new EventsRegistry(
       this.nativeEventsReceiver,
@@ -114,9 +119,9 @@ export class NavigationRoot {
   /**
    * Adds an option processor which allows option interpolation by optionPath.
    */
-  public addOptionProcessor<T>(
+  public addOptionProcessor<T, S = any>(
     optionPath: string,
-    processor: (value: T, commandName: CommandName) => T
+    processor: OptionProcessor<T, S>
   ): ProcessorSubscription {
     return this.optionProcessorsStore.addProcessor(optionPath, processor);
   }
@@ -183,8 +188,8 @@ export class NavigationRoot {
   /**
    * Update a mounted component's props
    */
-  public updateProps(componentId: string, props: object) {
-    this.commands.updateProps(componentId, props);
+  public updateProps(componentId: string, props: object, callback?: () => void) {
+    this.commands.updateProps(componentId, props, callback);
   }
 
   /**
@@ -262,6 +267,13 @@ export class NavigationRoot {
   }
 
   /**
+   * dismiss all overlays
+   */
+  public dismissAllOverlays(): Promise<string> {
+    return this.commands.dismissAllOverlays();
+  }
+
+  /**
    * Resolves arguments passed on launch
    */
   public getLaunchArgs(): Promise<any> {
@@ -280,6 +292,13 @@ export class NavigationRoot {
    */
   public async constants(): Promise<NavigationConstants> {
     return await Constants.get();
+  }
+
+  /**
+   * Constants coming from native (synchronized call)
+   */
+  public constantsSync(): NavigationConstants {
+    return Constants.getSync();
   }
 
   /**

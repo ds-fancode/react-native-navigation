@@ -40,6 +40,13 @@
     if (@available(iOS 13.0, *)) {
         self.tabBar.standardAppearance = [UITabBarAppearance new];
     }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
+    if (@available(iOS 15.0, *)) {
+        self.tabBar.scrollEdgeAppearance = [UITabBarAppearance new];
+    }
+#endif
+
+    [self createTabBarItems:childViewControllers];
 
     self.longPressRecognizer =
         [[UILongPressGestureRecognizer alloc] initWithTarget:self
@@ -49,14 +56,16 @@
     return self;
 }
 
+- (void)createTabBarItems:(NSArray<UIViewController *> *)childViewControllers {
+    for (UIViewController *child in childViewControllers) {
+        [_bottomTabPresenter applyOptions:child.resolveOptions child:child];
+    }
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     _viewWillAppearOnce = YES;
     [self loadChildren:self.pendingChildViewControllers];
-}
-
-- (void)onChildAddToParent:(UIViewController *)child options:(RNNNavigationOptions *)options {
-    [_bottomTabPresenter applyOptionsOnWillMoveToParentViewController:options child:child];
 }
 
 - (void)mergeChildOptions:(RNNNavigationOptions *)options child:(UIViewController *)child {
@@ -79,6 +88,7 @@
 }
 
 - (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
     [self.presenter viewDidLayoutSubviews];
     [_dotIndicatorPresenter bottomTabsDidLayoutSubviews:self];
 }
@@ -92,7 +102,7 @@
 }
 
 - (void)setSelectedIndexByComponentID:(NSString *)componentID {
-    NSArray *children = self.pendingChildViewControllers ?: self.childViewControllers;
+    NSArray *children = self.childViewControllers;
     for (id child in children) {
         UIViewController<RNNLayoutProtocol> *vc = child;
 
@@ -111,14 +121,16 @@
 }
 
 - (UIViewController *)selectedViewController {
-    NSArray *children = self.pendingChildViewControllers ?: self.childViewControllers;
-    return children.count ? children[_currentTabIndex] : nil;
+    return self.childViewControllers.count ? self.childViewControllers[_currentTabIndex] : nil;
+}
+
+- (NSArray<__kindof UIViewController *> *)childViewControllers {
+    return self.pendingChildViewControllers ?: super.childViewControllers;
 }
 
 - (void)setSelectedViewController:(__kindof UIViewController *)selectedViewController {
-    NSArray *children = self.pendingChildViewControllers ?: self.childViewControllers;
     _previousTabIndex = _currentTabIndex;
-    _currentTabIndex = [children indexOfObject:selectedViewController];
+    _currentTabIndex = [self.childViewControllers indexOfObject:selectedViewController];
     [super setSelectedViewController:selectedViewController];
 }
 
@@ -169,9 +181,11 @@
 - (BOOL)tabBarController:(UITabBarController *)tabBarController
     shouldSelectViewController:(UIViewController *)viewController {
     NSUInteger _index = [tabBarController.viewControllers indexOfObject:viewController];
+    BOOL isMoreTab = ![tabBarController.viewControllers containsObject:viewController];
+
     [self.eventEmitter sendBottomTabPressed:@(_index)];
 
-    if ([[viewController resolveOptions].bottomTab.selectTabOnPress getWithDefaultValue:YES]) {
+    if ([[viewController resolveOptions].bottomTab.selectTabOnPress withDefault:YES] || isMoreTab) {
         return YES;
     }
 
@@ -179,10 +193,6 @@
 }
 
 #pragma mark - UIViewController overrides
-
-- (void)willMoveToParentViewController:(UIViewController *)parent {
-    [self.presenter willMoveToParentViewController:parent];
-}
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return [self.presenter getStatusBarStyle];

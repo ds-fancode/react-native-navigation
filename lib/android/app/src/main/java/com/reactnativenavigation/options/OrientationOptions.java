@@ -1,13 +1,13 @@
 package com.reactnativenavigation.options;
 
-import androidx.annotation.CheckResult;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import androidx.annotation.CheckResult;
 
 public class OrientationOptions {
     List<Orientation> orientations = new ArrayList<>();
@@ -44,6 +44,8 @@ public class OrientationOptions {
                 return orientations.contains(Orientation.Landscape) ? Orientation.PortraitLandscape.orientationCode : Orientation.Portrait.orientationCode;
             case SensorLandscape:
                 return Orientation.SensorLandscape.orientationCode;
+            case SensorPortrait:
+                return Orientation.SensorPortrait.orientationCode;
             default:
             case Default:
                 return Orientation.Default.orientationCode;
@@ -51,7 +53,8 @@ public class OrientationOptions {
     }
 
     public boolean hasValue() {
-        return !orientations.isEmpty() && !(orientations.size() == 1 && orientations.get(0) == Orientation.Default);
+        if (orientations.isEmpty()) return false;
+        return orientations.size() != 1 || orientations.get(0) != Orientation.Default;
     }
 
     @CheckResult

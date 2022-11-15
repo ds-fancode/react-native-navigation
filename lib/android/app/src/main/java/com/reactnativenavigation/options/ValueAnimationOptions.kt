@@ -19,9 +19,11 @@ class ValueAnimationOptions {
     private var animProp: Property<View, Float>? = null
     private var animPropType: Int? = null
     private var animationValueAccessor: ((View) -> Float)? = null
-    private var from: FloatParam = NullFloatParam()
+    var from: FloatParam = NullFloatParam()
+        private set
     private var fromDelta = FloatParam(0f)
-    private var to: FloatParam = NullFloatParam()
+    var to: FloatParam = NullFloatParam()
+        private set
     private var toDelta = FloatParam(0f)
     var duration: Number = NullNumber()
     private var startDelay: Number = NullNumber()
@@ -58,9 +60,9 @@ class ValueAnimationOptions {
         return animator
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        return if (o == null || javaClass != o.javaClass) false else animProp == (o as ValueAnimationOptions).animProp
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return if (other == null || javaClass != other.javaClass) false else animProp == (other as ValueAnimationOptions).animProp
     }
 
     fun equals(animationProperty: Property<View?, Float?>): Boolean {

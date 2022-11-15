@@ -1,3 +1,5 @@
+[![SWUbanner](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://vshymanskyy.github.io/StandWithUkraine)
+
 <h1 align="center">
   <img src=".logo.png"/><br/>
   React Native Navigation
@@ -8,6 +10,7 @@
   <a href="https://www.npmjs.com/package/react-native-navigation"><img src="https://img.shields.io/npm/v/react-native-navigation/latest.svg?style=flat-square" alt="NPM latest version"></a>
   <a href="https://www.npmjs.com/package/react-native-navigation"><img src="https://img.shields.io/npm/v/react-native-navigation/snapshot.svg?style=flat-square" alt="NPM snapshot version"></a>
   <a href="https://jenkins-oss.wixpress.com/job/multi-react-native-navigation-master/"><img src="https://img.shields.io/jenkins/s/http/jenkins-oss.wixpress.com:8080/job/multi-react-native-navigation-master.svg?style=flat-square" alt="NPM snapshot version"></a>
+
 </p>
 <p align="center">
   <a href="https://twitter.com/reactnativenav"><img src="https://img.shields.io/twitter/follow/reactnativenav.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20us%20on%20Twitter" alt="Follow on Twitter"></a>

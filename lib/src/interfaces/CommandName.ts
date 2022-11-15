@@ -13,6 +13,7 @@ export enum CommandName {
   SetStackRoot = 'setStackRoot',
   ShowOverlay = 'showOverlay',
   DismissOverlay = 'dismissOverlay',
+  DismissAllOverlays = 'dismissAllOverlays',
   GetLaunchArgs = 'getLaunchArgs',
   PushAsPIP = 'pushAsPIP',
 }

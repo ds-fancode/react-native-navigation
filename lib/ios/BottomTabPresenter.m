@@ -3,42 +3,42 @@
 #import "UIViewController+LayoutProtocol.h"
 #import "UIViewController+RNNOptions.h"
 
-@implementation BottomTabPresenter
+@implementation BottomTabPresenter {
+    RNNTabBarItemCreator *_tabCreator;
+}
+
+- (instancetype)initWithDefaultOptions:(RNNNavigationOptions *)defaultOptions
+                            tabCreator:(RNNTabBarItemCreator *)tabCreator {
+    self = [super initWithDefaultOptions:defaultOptions];
+    _tabCreator = tabCreator;
+    return self;
+}
 
 - (void)applyOptions:(RNNNavigationOptions *)options child:(UIViewController *)child {
     RNNNavigationOptions *withDefault = [options withDefault:self.defaultOptions];
 
-    [child setTabBarItemBadge:[withDefault.bottomTab.badge getWithDefaultValue:[NSNull null]]];
-    [child setTabBarItemBadgeColor:[withDefault.bottomTab.badgeColor getWithDefaultValue:nil]];
-}
-
-- (void)applyOptionsOnWillMoveToParentViewController:(RNNNavigationOptions *)options
-                                               child:(UIViewController *)child {
-    RNNNavigationOptions *withDefault = [options withDefault:self.defaultOptions];
-
     [self createTabBarItem:child bottomTabOptions:withDefault.bottomTab];
-    [child setTabBarItemBadge:[withDefault.bottomTab.badge getWithDefaultValue:[NSNull null]]];
-    [child setTabBarItemBadgeColor:[withDefault.bottomTab.badgeColor getWithDefaultValue:nil]];
+    [child setTabBarItemBadge:[withDefault.bottomTab.badge withDefault:[NSNull null]]];
+    [child setTabBarItemBadgeColor:[withDefault.bottomTab.badgeColor withDefault:nil]];
 }
 
-- (void)mergeOptions:(RNNNavigationOptions *)options
+- (void)mergeOptions:(RNNNavigationOptions *)mergeOptions
      resolvedOptions:(RNNNavigationOptions *)resolvedOptions
                child:(UIViewController *)child {
     RNNNavigationOptions *withDefault = (RNNNavigationOptions *)[[resolvedOptions
-        withDefault:self.defaultOptions] overrideOptions:options];
+        withDefault:self.defaultOptions] mergeOptions:mergeOptions];
 
-    if (options.bottomTab.hasValue)
+    if (mergeOptions.bottomTab.hasValue)
         [self createTabBarItem:child bottomTabOptions:withDefault.bottomTab];
-    if (options.bottomTab.badge.hasValue)
-        [child setTabBarItemBadge:options.bottomTab.badge.get];
-    if (options.bottomTab.badgeColor.hasValue)
-        [child setTabBarItemBadgeColor:options.bottomTab.badgeColor.get];
+    if (mergeOptions.bottomTab.badge.hasValue)
+        [child setTabBarItemBadge:mergeOptions.bottomTab.badge.get];
+    if (mergeOptions.bottomTab.badgeColor.hasValue)
+        [child setTabBarItemBadgeColor:mergeOptions.bottomTab.badgeColor.get];
 }
 
 - (void)createTabBarItem:(UIViewController *)child
         bottomTabOptions:(RNNBottomTabOptions *)bottomTabOptions {
-    child.tabBarItem = [RNNTabBarItemCreator createTabBarItem:bottomTabOptions
-                                                    mergeItem:child.tabBarItem];
+    child.tabBarItem = [_tabCreator createTabBarItem:bottomTabOptions mergeItem:child.tabBarItem];
 }
 
 @end

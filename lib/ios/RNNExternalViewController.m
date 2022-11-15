@@ -1,4 +1,5 @@
 #import "RNNExternalViewController.h"
+#import "AnimationObserver.h"
 
 @implementation RNNExternalViewController {
     UIViewController *_boundViewController;
@@ -40,11 +41,29 @@
     [self readyForPresentation];
 }
 
-#pragma mark - UIViewController overrides
-
-- (void)willMoveToParentViewController:(UIViewController *)parent {
-    [self.presenter willMoveToParentViewController:parent];
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.eventEmitter sendComponentWillAppear:self.layoutInfo.componentId
+                                 componentName:self.layoutInfo.name
+                                 componentType:ComponentTypeScreen];
 }
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [[AnimationObserver sharedObserver] endAnimation];
+    [self.eventEmitter sendComponentDidAppear:self.layoutInfo.componentId
+                                componentName:self.layoutInfo.name
+                                componentType:ComponentTypeScreen];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [self.eventEmitter sendComponentDidDisappear:self.layoutInfo.componentId
+                                   componentName:self.layoutInfo.name
+                                   componentType:ComponentTypeScreen];
+}
+
+#pragma mark - UIViewController overrides
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return [self.presenter getStatusBarStyle];

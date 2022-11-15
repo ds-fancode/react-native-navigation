@@ -4,7 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 
+import com.reactnativenavigation.options.ButtonOptions;
 import com.reactnativenavigation.viewcontrollers.viewcontroller.ScrollEventListener;
 import com.reactnativenavigation.options.Options;
 import com.reactnativenavigation.options.params.Bool;
@@ -20,6 +22,7 @@ import static com.reactnativenavigation.utils.CoordinatorLayoutUtils.matchParent
 @SuppressLint("ViewConstructor")
 public class ComponentLayout extends CoordinatorLayout implements ReactComponent, ButtonController.OnClickListener {
 
+    private boolean willAppearSent = false;
     private ReactView reactView;
     private final OverlayTouchDelegate touchDelegate;
 
@@ -49,11 +52,18 @@ public class ComponentLayout extends CoordinatorLayout implements ReactComponent
         reactView.start();
     }
 
+    public void sendComponentWillStart() {
+        if (!willAppearSent)
+            reactView.sendComponentWillStart(ComponentType.Component);
+        willAppearSent = true;
+    }
+
     public void sendComponentStart() {
         reactView.sendComponentStart(ComponentType.Component);
     }
 
     public void sendComponentStop() {
+        willAppearSent = false;
         reactView.sendComponentStop(ComponentType.Component);
     }
 
@@ -86,9 +96,10 @@ public class ComponentLayout extends CoordinatorLayout implements ReactComponent
     }
 
     @Override
-    public void onPress(String buttonId) {
-        reactView.sendOnNavigationButtonPressed(buttonId);
+    public void onPress(ButtonOptions button) {
+        reactView.sendOnNavigationButtonPressed(button.id);
     }
+
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {

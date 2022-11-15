@@ -6,18 +6,17 @@
 }
 
 - (instancetype)initWithView:(UIView *)view
-                viewLocation:(RNNViewLocation *)viewLocation
+                        from:(CATransform3D)from
+                          to:(CATransform3D)to
                   startDelay:(NSTimeInterval)startDelay
                     duration:(NSTimeInterval)duration
                 interpolator:(id<Interpolator>)interpolator {
     self = [super initWithView:view
-                          from:viewLocation.fromFrame
-                            to:viewLocation.toFrame
                     startDelay:startDelay
                       duration:duration
                   interpolator:interpolator];
-    _fromTransform = viewLocation.fromTransform;
-    _toTransform = viewLocation.toTransform;
+    _fromTransform = from;
+    _toTransform = to;
     return self;
 }
 
@@ -26,7 +25,6 @@
                                                    toTransform:_toTransform
                                                        precent:p
                                                   interpolator:self.interpolator];
-
     return toTransform;
 }
 

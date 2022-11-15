@@ -5,8 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
-import androidx.annotation.RestrictTo;
-
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
 import com.facebook.react.bridge.ReactContext;
@@ -67,14 +65,27 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
         unmountReactApplication();
     }
 
+    public void sendComponentWillStart(ComponentType type) {
+        this.post(()->{
+            if (this.reactInstanceManager == null) return;
+            ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
+            if (currentReactContext != null)
+                new EventEmitter(currentReactContext).emitComponentWillAppear(componentId, componentName, type);
+        });
+    }
+
     public void sendComponentStart(ComponentType type) {
-        ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
-        if (currentReactContext != null) {
-            new EventEmitter(currentReactContext).emitComponentDidAppear(componentId, componentName, type);
-        }
+        this.post(()->{
+            if (this.reactInstanceManager == null) return;
+            ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
+            if (currentReactContext != null) {
+                new EventEmitter(currentReactContext).emitComponentDidAppear(componentId, componentName, type);
+            }
+        });
     }
 
     public void sendComponentStop(ComponentType type) {
+        if (this.reactInstanceManager == null) return;
         ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
         if (currentReactContext != null) {
             new EventEmitter(currentReactContext).emitComponentDidDisappear(componentId, componentName, type);
@@ -83,6 +94,7 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
 
     @Override
     public void sendOnNavigationButtonPressed(String buttonId) {
+        if (this.reactInstanceManager == null) return;
         ReactContext currentReactContext = reactInstanceManager.getCurrentReactContext();
         if (currentReactContext != null) {
             new EventEmitter(currentReactContext).emitOnNavigationButtonPressed(componentId, buttonId);

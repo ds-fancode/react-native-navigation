@@ -15,6 +15,8 @@ const {
   SET_ROOT_HIDES_BOTTOM_TABS_BTN,
   SET_ROOT_WITH_STACK_HIDES_BOTTOM_TABS_BTN,
   SET_ROOT_WITHOUT_STACK_HIDES_BOTTOM_TABS_BTN,
+  SET_ROOT_WITH_BUTTONS,
+  ROUND_BUTTON,
 } = testIDs;
 
 export default class SetRootScreen extends React.Component<NavigationComponentProps> {
@@ -24,6 +26,20 @@ export default class SetRootScreen extends React.Component<NavigationComponentPr
         title: {
           text: 'Navigation',
         },
+        rightButtons: [
+          {
+            id: 'ROUND',
+            testID: ROUND_BUTTON,
+            component: {
+              id: 'ROUND_COMPONENT',
+              name: Screens.RoundButton,
+              passProps: {
+                title: 'Two',
+                timesCreated: 1,
+              },
+            },
+          },
+        ],
       },
       bottomTab: {
         text: 'Navigation',
@@ -58,6 +74,11 @@ export default class SetRootScreen extends React.Component<NavigationComponentPr
           label="Set Root without stack - hides bottomTabs"
           testID={SET_ROOT_WITHOUT_STACK_HIDES_BOTTOM_TABS_BTN}
           onPress={this.setRootWithoutStackHidesBottomTabs}
+        />
+        <Button
+          label="Set Root with buttons"
+          testID={SET_ROOT_WITH_BUTTONS}
+          onPress={this.setRootWithButtons}
         />
       </Root>
     );
@@ -112,6 +133,7 @@ export default class SetRootScreen extends React.Component<NavigationComponentPr
                       options: {
                         bottomTabs: {
                           visible: false,
+                          animate: false,
                         },
                       },
                     },
@@ -151,6 +173,7 @@ export default class SetRootScreen extends React.Component<NavigationComponentPr
                       options: {
                         bottomTabs: {
                           visible: false,
+                          animate: false,
                         },
                       },
                     },
@@ -180,6 +203,7 @@ export default class SetRootScreen extends React.Component<NavigationComponentPr
                 options: {
                   bottomTabs: {
                     visible: false,
+                    animate: false,
                   },
                 },
               },
@@ -196,6 +220,45 @@ export default class SetRootScreen extends React.Component<NavigationComponentPr
               testID: LAYOUTS_TAB,
             },
           },
+        },
+      },
+    });
+
+  setRootWithButtons = () =>
+    Navigation.setRoot({
+      root: {
+        stack: {
+          options: {},
+          children: [
+            {
+              component: {
+                name: Screens.SetRoot,
+                options: {
+                  animations: {
+                    setRoot: {
+                      waitForRender: true,
+                    },
+                  },
+                  topBar: {
+                    rightButtons: [
+                      {
+                        id: 'ROUND',
+                        testID: ROUND_BUTTON,
+                        component: {
+                          id: 'ROUND_COMPONENT',
+                          name: Screens.RoundButton,
+                          passProps: {
+                            title: 'Two',
+                            timesCreated: 1,
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
         },
       },
     });

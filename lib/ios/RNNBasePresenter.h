@@ -24,8 +24,6 @@ typedef void (^RNNReactViewReadyCompletionBlock)(void);
 
 - (void)applyOptions:(RNNNavigationOptions *)options;
 
-- (void)applyOptionsOnWillMoveToParentViewController:(RNNNavigationOptions *)options;
-
 - (void)mergeOptions:(RNNNavigationOptions *)options
      resolvedOptions:(RNNNavigationOptions *)resolvedOptions;
 
@@ -34,13 +32,13 @@ typedef void (^RNNReactViewReadyCompletionBlock)(void);
 
 - (void)viewDidLayoutSubviews;
 
+- (void)componentWillAppear;
+
 - (void)componentDidAppear;
 
 - (void)componentDidDisappear;
 
 - (UINavigationItem *)currentNavigationItem;
-
-- (void)willMoveToParentViewController:(UIViewController *)parent;
 
 - (UIStatusBarStyle)getStatusBarStyle;
 

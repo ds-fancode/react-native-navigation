@@ -1,3 +1,4 @@
+import cloneDeepWith from 'lodash/cloneDeepWith';
 import cloneDeep from 'lodash/cloneDeep';
 import map from 'lodash/map';
 import { CommandsObserver } from '../events/CommandsObserver';
@@ -11,6 +12,7 @@ import { OptionsProcessor } from './OptionsProcessor';
 import { Store } from '../components/Store';
 import { LayoutProcessor } from '../processors/LayoutProcessor';
 import { CommandName } from '../interfaces/CommandName';
+import { OptionsCrawler } from './OptionsCrawler';
 
 export class Commands {
   constructor(
@@ -21,20 +23,24 @@ export class Commands {
     private readonly commandsObserver: CommandsObserver,
     private readonly uniqueIdProvider: UniqueIdProvider,
     private readonly optionsProcessor: OptionsProcessor,
-    private readonly layoutProcessor: LayoutProcessor
+    private readonly layoutProcessor: LayoutProcessor,
+    private readonly optionsCrawler: OptionsCrawler
   ) {}
 
   public setRoot(simpleApi: LayoutRoot) {
-    const input = cloneDeep(simpleApi);
+    const input = cloneLayout(simpleApi);
+    this.optionsCrawler.crawl(input.root);
     const processedRoot = this.layoutProcessor.process(input.root, CommandName.SetRoot);
     const root = this.layoutTreeParser.parse(processedRoot);
 
     const modals = map(input.modals, (modal) => {
+      this.optionsCrawler.crawl(modal);
       const processedModal = this.layoutProcessor.process(modal, CommandName.SetRoot);
       return this.layoutTreeParser.parse(processedModal);
     });
 
     const overlays = map(input.overlays, (overlay: any) => {
+      this.optionsCrawler.crawl(overlay);
       const processedOverlay = this.layoutProcessor.process(overlay, CommandName.SetRoot);
       return this.layoutTreeParser.parse(processedOverlay);
     });
@@ -67,19 +73,26 @@ export class Commands {
 
   public mergeOptions(componentId: string, options: Options) {
     const input = cloneDeep(options);
-    this.optionsProcessor.processOptions(input, CommandName.MergeOptions);
+    this.optionsProcessor.processOptions(CommandName.MergeOptions, input);
+
+    const component = this.store.getComponentInstance(componentId);
+    if (component && !component.isMounted)
+      console.warn(
+        `Navigation.mergeOptions was invoked on component with id: ${componentId} before it is mounted, this can cause UI issues and should be avoided.\n Use static options instead.`
+      );
 
     this.nativeCommandsSender.mergeOptions(componentId, input);
     this.commandsObserver.notify(CommandName.MergeOptions, { componentId, options });
   }
 
-  public updateProps(componentId: string, props: object) {
-    this.store.updateProps(componentId, props);
+  public updateProps(componentId: string, props: object, callback?: () => void) {
+    this.store.updateProps(componentId, props, callback);
     this.commandsObserver.notify(CommandName.UpdateProps, { componentId, props });
   }
 
   public showModal(layout: Layout) {
-    const layoutCloned = cloneDeep(layout);
+    const layoutCloned = cloneLayout(layout);
+    this.optionsCrawler.crawl(layoutCloned);
     const layoutProcessed = this.layoutProcessor.process(layoutCloned, CommandName.ShowModal);
     const layoutNode = this.layoutTreeParser.parse(layoutProcessed);
 
@@ -93,6 +106,7 @@ export class Commands {
 
   public dismissModal(componentId: string, mergeOptions?: Options) {
     const commandId = this.uniqueIdProvider.generate(CommandName.DismissModal);
+    this.optionsProcessor.processOptions(CommandName.DismissModal, mergeOptions);
     const result = this.nativeCommandsSender.dismissModal(commandId, componentId, mergeOptions);
     this.commandsObserver.notify(CommandName.DismissModal, {
       commandId,
@@ -104,13 +118,15 @@ export class Commands {
 
   public dismissAllModals(mergeOptions?: Options) {
     const commandId = this.uniqueIdProvider.generate(CommandName.DismissAllModals);
+    this.optionsProcessor.processOptions(CommandName.DismissAllModals, mergeOptions);
     const result = this.nativeCommandsSender.dismissAllModals(commandId, mergeOptions);
     this.commandsObserver.notify(CommandName.DismissAllModals, { commandId, mergeOptions });
     return result;
   }
 
   public push(componentId: string, simpleApi: Layout) {
-    const input = cloneDeep(simpleApi);
+    const input = cloneLayout(simpleApi);
+    this.optionsCrawler.crawl(input);
     const layoutProcessed = this.layoutProcessor.process(input, CommandName.Push);
     const layout = this.layoutTreeParser.parse(layoutProcessed);
 
@@ -124,6 +140,7 @@ export class Commands {
 
   public pop(componentId: string, mergeOptions?: Options) {
     const commandId = this.uniqueIdProvider.generate(CommandName.Pop);
+    this.optionsProcessor.processOptions(CommandName.Pop, mergeOptions);
     const result = this.nativeCommandsSender.pop(commandId, componentId, mergeOptions);
     this.commandsObserver.notify(CommandName.Pop, { commandId, componentId, mergeOptions });
     return result;
@@ -131,6 +148,7 @@ export class Commands {
 
   public popTo(componentId: string, mergeOptions?: Options) {
     const commandId = this.uniqueIdProvider.generate(CommandName.PopTo);
+    this.optionsProcessor.processOptions(CommandName.PopTo, mergeOptions);
     const result = this.nativeCommandsSender.popTo(commandId, componentId, mergeOptions);
     this.commandsObserver.notify(CommandName.PopTo, { commandId, componentId, mergeOptions });
     return result;
@@ -138,13 +156,15 @@ export class Commands {
 
   public popToRoot(componentId: string, mergeOptions?: Options) {
     const commandId = this.uniqueIdProvider.generate(CommandName.PopToRoot);
+    this.optionsProcessor.processOptions(CommandName.PopToRoot, mergeOptions);
     const result = this.nativeCommandsSender.popToRoot(commandId, componentId, mergeOptions);
     this.commandsObserver.notify(CommandName.PopToRoot, { commandId, componentId, mergeOptions });
     return result;
   }
 
   public setStackRoot(componentId: string, children: Layout[]) {
-    const input = map(cloneDeep(children), (simpleApi) => {
+    const input = map(cloneLayout(children), (simpleApi) => {
+      this.optionsCrawler.crawl(simpleApi);
       const layoutProcessed = this.layoutProcessor.process(simpleApi, CommandName.SetStackRoot);
       const layout = this.layoutTreeParser.parse(layoutProcessed);
       return layout;
@@ -165,7 +185,8 @@ export class Commands {
   }
 
   public showOverlay(simpleApi: Layout) {
-    const input = cloneDeep(simpleApi);
+    const input = cloneLayout(simpleApi);
+    this.optionsCrawler.crawl(input);
     const layoutProcessed = this.layoutProcessor.process(input, CommandName.ShowOverlay);
     const layout = this.layoutTreeParser.parse(layoutProcessed);
 
@@ -181,6 +202,13 @@ export class Commands {
     const commandId = this.uniqueIdProvider.generate(CommandName.DismissOverlay);
     const result = this.nativeCommandsSender.dismissOverlay(commandId, componentId);
     this.commandsObserver.notify(CommandName.DismissOverlay, { commandId, componentId });
+    return result;
+  }
+
+  public dismissAllOverlays() {
+    const commandId = this.uniqueIdProvider.generate(CommandName.DismissAllOverlays);
+    const result = this.nativeCommandsSender.dismissAllOverlays(commandId);
+    this.commandsObserver.notify(CommandName.DismissAllOverlays, { commandId });
     return result;
   }
 
@@ -226,4 +254,10 @@ export class Commands {
     this.nativeCommandsSender.setPIPHostId(componentId);
     this.commandsObserver.notify('setPIPHostId', {componentId });
   }
+}
+
+function cloneLayout<L>(layout: L): L {
+  return cloneDeepWith(layout, (value, key) => {
+    if (key === 'passProps' && typeof value === 'object' && value !== null) return { ...value };
+  });
 }

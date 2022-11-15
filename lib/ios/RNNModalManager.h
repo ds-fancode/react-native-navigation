@@ -17,8 +17,12 @@ typedef void (^RNNTransitionRejectionBlock)(NSString *_Nonnull code, NSString *_
          animated:(BOOL)animated
        completion:(RNNTransitionWithComponentIdCompletionBlock _Nullable)completion;
 - (void)dismissModal:(UIViewController *_Nullable)viewController
+            animated:(BOOL)animated
           completion:(RNNTransitionCompletionBlock _Nullable)completion;
 - (void)dismissAllModalsAnimated:(BOOL)animated completion:(void (^__nullable)(void))completion;
-- (void)dismissAllModalsSynchronosly;
+
+- (void)reset;
+
+- (UIViewController *)topPresentedVC;
 
 @end

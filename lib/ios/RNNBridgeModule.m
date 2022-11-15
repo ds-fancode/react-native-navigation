@@ -218,6 +218,16 @@ RCT_EXPORT_METHOD(dismissOverlay
     });
 }
 
+RCT_EXPORT_METHOD(dismissAllOverlays
+                  : (NSString *)commandId componentId
+                  : (RCTPromiseResolveBlock)resolve rejecter
+                  : (RCTPromiseRejectBlock)reject) {
+    RCTExecuteOnMainQueue(^{
+      [self->_commandsHandler dismissAllOverlays:commandId];
+      resolve(nil);
+    });
+}
+
 RCT_EXPORT_METHOD(getLaunchArgs
                   : (NSString *)commandId
                   : (RCTPromiseResolveBlock)resolve rejecter
@@ -232,6 +242,10 @@ RCT_EXPORT_METHOD(getNavigationConstants
     RCTExecuteOnMainQueue(^{
       resolve([Constants getConstants]);
     });
+}
+
+RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(getNavigationConstantsSync) {
+    return [Constants getConstants];
 }
 
 @end

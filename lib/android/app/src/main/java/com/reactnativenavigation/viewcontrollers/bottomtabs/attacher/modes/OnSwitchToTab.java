@@ -9,7 +9,8 @@ import com.reactnativenavigation.viewcontrollers.viewcontroller.ViewController;
 import java.util.*;
 
 public class OnSwitchToTab extends AttachMode {
-    public OnSwitchToTab(ViewGroup parent, List<ViewController> tabs, BottomTabsPresenter presenter, Options resolved) {
+
+    public OnSwitchToTab(ViewGroup parent, List<ViewController<?>> tabs, BottomTabsPresenter presenter, Options resolved) {
         super(parent, tabs, presenter, resolved);
     }
 
@@ -19,13 +20,13 @@ public class OnSwitchToTab extends AttachMode {
     }
 
     @Override
-    public void onTabSelected(ViewController tab) {
+    public void onTabSelected(ViewController<?> tab) {
         if (tab != initialTab && isNotAttached(tab)) {
             attach(tab);
         }
     }
 
-    private boolean isNotAttached(ViewController tab) {
+    private boolean isNotAttached(ViewController<?> tab) {
         return tab.getView().getParent() == null;
     }
 }

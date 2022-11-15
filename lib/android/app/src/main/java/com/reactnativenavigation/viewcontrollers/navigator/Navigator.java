@@ -5,8 +5,16 @@ import android.app.PictureInPictureParams;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.Log;
+import android.content.res.Configuration;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.WindowInsetsCompat;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,14 +49,14 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class Navigator extends ParentController {
+public class Navigator extends ParentController<ViewGroup> {
     private NavigationActivity navigationActivity;
     private PIPNavigator pipNavigator;
     private final ModalStack modalStack;
     private final OverlayManager overlayManager;
     private final RootPresenter rootPresenter;
-    private ViewController root;
-    private ViewController previousRoot;
+    private ViewController<?> root;
+    private ViewController<?> previousRoot;
     private final CoordinatorLayout rootLayout;
     private final CoordinatorLayout modalsLayout;
     private final CoordinatorLayout overlaysLayout;
@@ -104,6 +112,8 @@ public class Navigator extends ParentController {
         this.pipNavigator.setPipListener(pipListener);
     }
 
+
+
     public void bindViews() {
         modalStack.setModalsLayout(modalsLayout);
         modalStack.setRootLayout(rootLayout);
@@ -118,7 +128,7 @@ public class Navigator extends ParentController {
 
     @NonNull
     @Override
-    public Collection<ViewController> getChildControllers() {
+    public Collection<ViewController<?>> getChildControllers() {
         return root == null ? Collections.emptyList() : Collections.singletonList(root);
     }
 
@@ -130,7 +140,7 @@ public class Navigator extends ParentController {
     }
 
     @Override
-    public ViewController getCurrentChild() {
+    public ViewController<?> getCurrentChild() {
         return root;
     }
 
@@ -161,15 +171,16 @@ public class Navigator extends ParentController {
 
     }
 
-
-    public void setRoot(final ViewController viewController, CommandListener commandListener, ReactInstanceManager reactInstanceManager) {
+    public void setRoot(final ViewController<?> appearing, CommandListener commandListener, ReactInstanceManager reactInstanceManager) {
         previousRoot = root;
         modalStack.destroy();
         final boolean removeSplashView = isRootNotCreated();
         if (isRootNotCreated()) getView();
-        root = viewController;
+        final ViewController<?> disappearing = previousRoot;
+        root = appearing;
         root.setOverlay(new RootOverlay(getActivity(), contentLayout));
-        rootPresenter.setRoot(root, defaultOptions, new CommandListenerAdapter(commandListener) {
+        root.setParentController(this);
+        rootPresenter.setRoot(appearing, disappearing, defaultOptions, new CommandListenerAdapter(commandListener) {
             @Override
             public void onSuccess(String childId) {
                 root.onViewDidAppear();
@@ -189,18 +200,22 @@ public class Navigator extends ParentController {
     }
 
     public void mergeOptions(final String componentId, Options options) {
-        ViewController target = findController(componentId);
+        ViewController<?> target = findController(componentId);
         if (target != null) {
             target.mergeOptions(options);
         } else {
-            target = pipNavigator.findController(componentId);
-            if (target != null) {
-                target.mergeOptions(options);
-            }
-        }
+             target = pipNavigator.findController(componentId);
+             if (target != null) {
+                 target.mergeOptions(options);
+             }
+         }
     }
 
-    public void setStackRoot(String id, List<ViewController> children, CommandListener listener) {
+    public void push(final String id, final ViewController<?> viewController, CommandListener listener) {
+        applyOnStack(id, listener, stack -> stack.push(viewController, listener));
+    }
+
+    public void setStackRoot(String id, List<ViewController<?>> children, CommandListener listener) {
         applyOnStack(id, listener, stack -> stack.setRoot(children, listener));
     }
 
@@ -282,7 +297,7 @@ public class Navigator extends ParentController {
         }
     }
 
-    public void showModal(final ViewController viewController, CommandListener listener) {
+    public void showModal(final ViewController<?> viewController, CommandListener listener) {
         modalStack.showModal(viewController, root, listener);
     }
 
@@ -298,7 +313,7 @@ public class Navigator extends ParentController {
         modalStack.dismissAllModals(root, mergeOptions, listener);
     }
 
-    public void showOverlay(ViewController overlay, CommandListener listener) {
+    public void showOverlay(ViewController<?> overlay, CommandListener listener) {
         overlayManager.show(overlaysLayout, overlay, listener);
     }
 
@@ -306,10 +321,14 @@ public class Navigator extends ParentController {
         overlayManager.dismiss(overlaysLayout, componentId, listener);
     }
 
+    public void dismissAllOverlays(CommandListener listener) {
+        overlayManager.dismissAll(overlaysLayout, listener);
+    }
+
     @Nullable
     @Override
-    public ViewController findController(String id) {
-        ViewController controllerById = super.findController(id);
+    public ViewController<?> findController(String id) {
+        ViewController<?> controllerById = super.findController(id);
         if (controllerById == null) {
             controllerById = modalStack.findControllerById(id);
         }
@@ -330,6 +349,13 @@ public class Navigator extends ParentController {
         } else if (listener != null) {
             listener.onError("Failed to execute stack command. Stack " + fromId + " not found.");
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        modalStack.onConfigurationChanged(newConfig);
+        overlayManager.onConfigurationChanged(newConfig);
+        super.onConfigurationChanged(newConfig);
     }
 
     public void updatePIPState(PIPStates newPIPState) {
@@ -431,5 +457,29 @@ public class Navigator extends ParentController {
 
     public PIPStates getPipMode() {
         return this.pipNavigator.getPipStates();
+    }
+
+    public void onHostPause() {
+        overlayManager.onHostPause();
+        if (!modalStack.isEmpty()) {
+            modalStack.onHostPause();
+            if(modalStack.peekDisplayedOverCurrentContext()){
+                onViewDisappear();
+            }
+        } else {
+            onViewDisappear();
+        }
+    }
+
+    public void onHostResume() {
+        overlayManager.onHostResume();
+        if (!modalStack.isEmpty()) {
+            modalStack.onHostResume();
+            if(modalStack.peekDisplayedOverCurrentContext()){
+                onViewDidAppear();
+            }
+        } else {
+            onViewDidAppear();
+        }
     }
 }

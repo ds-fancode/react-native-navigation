@@ -5,12 +5,12 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.reactnativenavigation.options.ButtonOptions;
-import com.reactnativenavigation.react.Constants;
 import com.reactnativenavigation.utils.Functions.Func1;
 import com.reactnativenavigation.utils.ImageLoader;
 import com.reactnativenavigation.utils.ImageLoadingListenerAdapter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RestrictTo;
 
 public class IconResolver {
 
@@ -35,10 +35,15 @@ public class IconResolver {
                     throw new RuntimeException(error);
                 }
             });
-        } else if (Constants.BACK_BUTTON_ID.equals(button.id)) {
+        } else if (button.isBackButton()) {
             onSuccess.run(imageLoader.getBackButtonIcon(context));
         } else {
             Log.w("RNN", "Left button needs to have an icon");
         }
+    }
+
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public ImageLoader getImageLoader() {
+        return imageLoader;
     }
 }

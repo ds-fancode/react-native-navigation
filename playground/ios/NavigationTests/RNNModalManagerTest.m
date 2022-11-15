@@ -2,6 +2,7 @@
 #import "RNNComponentViewController.h"
 #import "RNNStackController.h"
 #import <OCMock/OCMock.h>
+#import <React/RCTModalHostViewManager.h>
 #import <XCTest/XCTest.h>
 
 @interface MockViewController : UIViewController
@@ -21,6 +22,7 @@
 @end
 
 @interface MockModalManager : RNNModalManager
+@property(nonatomic, strong) MockViewController *rootViewController;
 @property(nonatomic, strong) MockViewController *topPresentedVC;
 @end
 
@@ -57,6 +59,10 @@
 }
 
 - (void)testDismissMultipleModalsInvokeDelegateWithCorrectParameters {
+    _modalManager.rootViewController = [OCMockObject partialMockForObject:UIViewController.new];
+    OCMStub(_modalManager.rootViewController.presentedViewController)
+        .andReturn(UIViewController.new);
+
     [_modalManager showModal:_vc1 animated:NO completion:nil];
     [_modalManager showModal:_vc2 animated:NO completion:nil];
     [_modalManager showModal:_vc3 animated:NO completion:nil];
@@ -66,13 +72,25 @@
     [_modalManagerEventHandler verify];
 }
 
+- (void)testDismissAllModals_InvokeCompletionWhenNoModalsPresented {
+    XCTestExpectation *expectation =
+        [self expectationWithDescription:@"Should invoke completion block"];
+
+    [_modalManager dismissAllModalsAnimated:NO
+                                 completion:^{
+                                   [expectation fulfill];
+                                 }];
+
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
 - (void)testDismissModal_InvokeDelegateWithCorrectParameters {
     [_modalManager showModal:_vc1 animated:NO completion:nil];
     [_modalManager showModal:_vc2 animated:NO completion:nil];
     [_modalManager showModal:_vc3 animated:NO completion:nil];
 
     [[_modalManagerEventHandler expect] dismissedModal:_vc3];
-    [_modalManager dismissModal:_vc3 completion:nil];
+    [_modalManager dismissModal:_vc3 animated:NO completion:nil];
     [_modalManagerEventHandler verify];
 }
 
@@ -82,17 +100,21 @@
     [_modalManager showModal:_vc3 animated:NO completion:nil];
 
     [[_modalManagerEventHandler expect] dismissedModal:_vc2];
-    [_modalManager dismissModal:_vc2 completion:nil];
+    [_modalManager dismissModal:_vc2 animated:NO completion:nil];
     [_modalManagerEventHandler verify];
 }
 
 - (void)testDismissAllModals_AfterDismissingPreviousModal_InvokeDelegateWithCorrectParameters {
+    _modalManager.rootViewController = [OCMockObject partialMockForObject:UIViewController.new];
+    OCMStub(_modalManager.rootViewController.presentedViewController)
+        .andReturn(UIViewController.new);
+
     [_modalManager showModal:_vc1 animated:NO completion:nil];
     [_modalManager showModal:_vc2 animated:NO completion:nil];
     [_modalManager showModal:_vc3 animated:NO completion:nil];
 
     [[_modalManagerEventHandler expect] dismissedModal:_vc2];
-    [_modalManager dismissModal:_vc2 completion:nil];
+    [_modalManager dismissModal:_vc2 animated:NO completion:nil];
     [_modalManagerEventHandler verify];
 
     [[_modalManagerEventHandler expect] dismissedMultipleModals:@[ _vc1, _vc3 ]];
@@ -102,7 +124,7 @@
 
 - (void)testDismissModal_DismissNilModalDoesntCrash {
     [[_modalManagerEventHandler reject] dismissedModal:OCMArg.any];
-    [_modalManager dismissModal:nil completion:nil];
+    [_modalManager dismissModal:nil animated:NO completion:nil];
     [_modalManagerEventHandler verify];
 }
 
@@ -147,20 +169,6 @@
     _vc1.options = [RNNNavigationOptions emptyOptions];
     [_modalManager showModal:_vc1 animated:NO completion:nil];
     XCTAssertEqual(_vc1.modalTransitionStyle, UIModalTransitionStyleCoverVertical);
-}
-
-- (void)testApplyOptionsOnInit_shouldShowModalWithPresentationStyle {
-    _vc1.options = [RNNNavigationOptions emptyOptions];
-    _vc1.options.modalPresentationStyle = [Text withValue:@"overCurrentContext"];
-    [_modalManager showModal:_vc1 animated:NO completion:nil];
-    XCTAssertEqual(_vc1.modalPresentationStyle, UIModalPresentationOverCurrentContext);
-}
-
-- (void)testApplyOptionsOnInit_shouldShowModalWithTransitionStyle {
-    _vc1.options = [RNNNavigationOptions emptyOptions];
-    _vc1.options.modalTransitionStyle = [Text withValue:@"crossDissolve"];
-    [_modalManager showModal:_vc1 animated:NO completion:nil];
-    XCTAssertEqual(_vc1.modalTransitionStyle, UIModalTransitionStyleCrossDissolve);
 }
 
 @end

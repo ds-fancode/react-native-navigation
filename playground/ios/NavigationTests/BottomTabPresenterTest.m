@@ -2,13 +2,14 @@
 #import "RNNBottomTabsController+Helpers.h"
 #import "UIViewController+RNNOptions.h"
 #import <OCMock/OCMock.h>
-#import <ReactNativeNavigation/BottomTabAppearancePresenter.h>
+#import <ReactNativeNavigation/BottomTabPresenter.h>
+#import <ReactNativeNavigation/BottomTabPresenterCreator.h>
 #import <ReactNativeNavigation/RNNComponentViewController.h>
 #import <XCTest/XCTest.h>
 
 @interface RNNBottomTabPresenterTest : XCTestCase
 
-@property(nonatomic, strong) BottomTabAppearancePresenter *uut;
+@property(nonatomic, strong) BottomTabPresenter *uut;
 @property(nonatomic, strong) RNNNavigationOptions *options;
 @property(nonatomic, strong) RNNBottomTabsController *boundViewController;
 @property(nonatomic, strong) RNNComponentViewController *componentViewController;
@@ -20,14 +21,14 @@
 
 - (void)setUp {
     [super setUp];
-    self.uut = [[BottomTabAppearancePresenter alloc]
-        initWithDefaultOptions:[[RNNNavigationOptions alloc] initEmptyOptions]];
+    self.uut =
+        [BottomTabPresenterCreator createWithDefaultOptions:RNNNavigationOptions.emptyOptions];
     self.componentViewController = [RNNComponentViewController new];
     self.boundViewController =
         [RNNBottomTabsController createWithChildren:@[ self.componentViewController ]];
     self.mockBoundViewController = [OCMockObject partialMockForObject:self.boundViewController];
     [self.uut bindViewController:self.mockBoundViewController];
-    self.options = [[RNNNavigationOptions alloc] initEmptyOptions];
+    self.options = [RNNNavigationOptions emptyOptions];
 }
 
 - (void)tearDown {
@@ -43,11 +44,11 @@
 }
 
 - (void)testMergeOptions_shouldSetTabBarItemColorWithDefaultOptions {
-    RNNNavigationOptions *defaultOptions = [[RNNNavigationOptions alloc] initEmptyOptions];
+    RNNNavigationOptions *defaultOptions = [RNNNavigationOptions emptyOptions];
     defaultOptions.bottomTab.selectedIconColor = [Color withColor:UIColor.greenColor];
     self.uut.defaultOptions = defaultOptions;
 
-    RNNNavigationOptions *mergeOptions = [[RNNNavigationOptions alloc] initEmptyOptions];
+    RNNNavigationOptions *mergeOptions = [RNNNavigationOptions emptyOptions];
     mergeOptions.bottomTab.text = [[Text alloc] initWithValue:@"title"];
 
     [self.uut mergeOptions:mergeOptions
@@ -57,11 +58,11 @@
 }
 
 - (void)testMergeOptions_shouldCreateNewTabBarItemInstance {
-    RNNNavigationOptions *defaultOptions = [[RNNNavigationOptions alloc] initEmptyOptions];
+    RNNNavigationOptions *defaultOptions = [RNNNavigationOptions emptyOptions];
     defaultOptions.bottomTab.selectedIconColor = [Color withColor:UIColor.greenColor];
     self.uut.defaultOptions = defaultOptions;
 
-    RNNNavigationOptions *mergeOptions = [[RNNNavigationOptions alloc] initEmptyOptions];
+    RNNNavigationOptions *mergeOptions = [RNNNavigationOptions emptyOptions];
     mergeOptions.bottomTab.text = [[Text alloc] initWithValue:@"title"];
 
     UITabBarItem *currentTabBarItem = self.componentViewController.tabBarItem;

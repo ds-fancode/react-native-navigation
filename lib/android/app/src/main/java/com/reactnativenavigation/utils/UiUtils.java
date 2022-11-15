@@ -14,8 +14,10 @@ import androidx.annotation.Nullable;
 
 public class UiUtils {
     private static final int DEFAULT_TOOLBAR_HEIGHT = 56;
+    private static final int DEFAULT_BOTTOM_TABS_HEIGHT = 56;
 
     private static int topBarHeight = -1;
+    private static int bottomTabsHeight = -1;
 
     public static <T extends View> void runOnPreDrawOnce(@Nullable final T view, final Functions.Func1<T> task) {
         if (view == null) return;
@@ -49,7 +51,7 @@ public class UiUtils {
         if (view.getHeight() > 0 && view.getWidth() > 0) {
             task.run();
         } else {
-            view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
                     if (view.getHeight() > 0 && view.getWidth() > 0) {
@@ -57,8 +59,25 @@ public class UiUtils {
                         task.run();
                     }
                 }
-            });
+            };
+            runOnDetach(view, () -> view.getViewTreeObserver().removeOnGlobalLayoutListener(listener));
+            view.getViewTreeObserver().addOnGlobalLayoutListener(listener);
         }
+    }
+
+    public static void runOnDetach(View view, Runnable task) {
+        view.getViewTreeObserver().addOnWindowAttachListener(new ViewTreeObserver.OnWindowAttachListener() {
+            @Override
+            public void onWindowAttached() {
+
+            }
+
+            @Override
+            public void onWindowDetached() {
+                view.getViewTreeObserver().removeOnWindowAttachListener(this);
+                task.run();
+            }
+        });
     }
 
     public static void runOnMainThread(Runnable runnable) {
@@ -107,10 +126,25 @@ public class UiUtils {
         return topBarHeight;
     }
 
+    public static int getBottomTabsHeight(Context context) {
+        if (bottomTabsHeight > 0) {
+            return bottomTabsHeight;
+        }
+        final Resources resources = context.getResources();
+        final int resourceId = resources.getIdentifier("bottom_navigation_height", "dimen", context.getPackageName());
+        bottomTabsHeight = resourceId > 0 ?
+                resources.getDimensionPixelSize(resourceId) :
+                dpToPx(context, DEFAULT_BOTTOM_TABS_HEIGHT);
+        return bottomTabsHeight;
+    }
+
     public static float dpToPx(Context context, float dp) {
         Resources resources = context.getResources();
-        DisplayMetrics metrics = resources.getDisplayMetrics();
-        return dp * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return dpToPx(resources.getDisplayMetrics(), dp);
+    }
+
+    public static float dpToPx(DisplayMetrics metrics, float dp) {
+        return dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     public static int dpToPx(Context context, int dp) {

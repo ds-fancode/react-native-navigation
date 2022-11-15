@@ -1,3 +1,4 @@
+import type { Component } from 'react';
 import { EmitterSubscription } from 'react-native';
 
 import { NativeEventsReceiver } from '../adapters/NativeEventsReceiver';
@@ -6,6 +7,7 @@ import { EventSubscription } from '../interfaces/EventSubscription';
 import { NavigationComponentListener } from '../interfaces/NavigationComponentListener';
 import { ComponentEventsObserver } from './ComponentEventsObserver';
 import {
+  ComponentWillAppearEvent,
   ComponentDidAppearEvent,
   ComponentDidDisappearEvent,
   NavigationButtonPressedEvent,
@@ -32,6 +34,12 @@ export class EventsRegistry {
 
   public registerAppLaunchedListener(callback: () => void): EmitterSubscription {
     return this.nativeEventsReceiver.registerAppLaunchedListener(callback);
+  }
+
+  public registerComponentWillAppearListener(
+    callback: (event: ComponentWillAppearEvent) => void
+  ): EmitterSubscription {
+    return this.nativeEventsReceiver.registerComponentWillAppearListener(callback);
   }
 
   public registerComponentDidAppearListener(
@@ -110,7 +118,7 @@ export class EventsRegistry {
     return this.commandsObserver.register(callback);
   }
 
-  public bindComponent(component: React.Component<any>, componentId?: string): EventSubscription {
+  public bindComponent(component: Component<any>, componentId?: string): EventSubscription {
     return this.componentEventsObserver.bindComponent(component, componentId);
   }
 
