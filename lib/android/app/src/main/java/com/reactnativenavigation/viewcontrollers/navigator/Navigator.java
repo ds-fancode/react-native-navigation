@@ -42,15 +42,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-
-public class Navigator extends ParentController {
+public class Navigator extends ParentController<ViewGroup> {
     private NavigationActivity navigationActivity;
     private PIPNavigator pipNavigator;
     private final ModalStack modalStack;
     private final OverlayManager overlayManager;
     private final RootPresenter rootPresenter;
-    private ViewController root;
-    private ViewController previousRoot;
+    private ViewController<?> root;
+    private ViewController<?> previousRoot;
     private final CoordinatorLayout rootLayout;
     private final CoordinatorLayout modalsLayout;
     private final CoordinatorLayout overlaysLayout;
@@ -106,6 +105,8 @@ public class Navigator extends ParentController {
         this.pipNavigator.setPipListener(pipListener);
     }
 
+
+
     public void bindViews() {
         modalStack.setModalsLayout(modalsLayout);
         modalStack.setRootLayout(rootLayout);
@@ -120,7 +121,7 @@ public class Navigator extends ParentController {
 
     @NonNull
     @Override
-    public Collection<ViewController> getChildControllers() {
+    public Collection<ViewController<?>> getChildControllers() {
         return root == null ? Collections.emptyList() : Collections.singletonList(root);
     }
 
@@ -132,7 +133,7 @@ public class Navigator extends ParentController {
     }
 
     @Override
-    public ViewController getCurrentChild() {
+    public ViewController<?> getCurrentChild() {
         return root;
     }
 
@@ -172,6 +173,7 @@ public class Navigator extends ParentController {
         final ViewController<?> disappearing = previousRoot;
         root = appearing;
         root.setOverlay(new RootOverlay(getActivity(), contentLayout));
+        root.setParentController(this);
         rootPresenter.setRoot(appearing, disappearing, defaultOptions, new CommandListenerAdapter(commandListener) {
             @Override
             public void onSuccess(String childId) {
@@ -193,7 +195,7 @@ public class Navigator extends ParentController {
     }
 
     public void mergeOptions(final String componentId, Options options) {
-        ViewController target = findController(componentId);
+        ViewController<?> target = findController(componentId);
         if (target != null) {
             target.mergeOptions(options);
         } else {
@@ -292,7 +294,7 @@ public class Navigator extends ParentController {
         }
     }
 
-    public void showModal(final ViewController viewController, CommandListener listener) {
+    public void showModal(final ViewController<?> viewController, CommandListener listener) {
         modalStack.showModal(viewController, root, listener);
     }
 
@@ -308,7 +310,7 @@ public class Navigator extends ParentController {
         modalStack.dismissAllModals(root, mergeOptions, listener);
     }
 
-    public void showOverlay(ViewController overlay, CommandListener listener) {
+    public void showOverlay(ViewController<?> overlay, CommandListener listener) {
         overlayManager.show(overlaysLayout, overlay, listener);
     }
 
@@ -322,8 +324,8 @@ public class Navigator extends ParentController {
 
     @Nullable
     @Override
-    public ViewController findController(String id) {
-        ViewController controllerById = super.findController(id);
+    public ViewController<?> findController(String id) {
+        ViewController<?> controllerById = super.findController(id);
         if (controllerById == null) {
             controllerById = modalStack.findControllerById(id);
         }
@@ -460,10 +462,26 @@ public class Navigator extends ParentController {
     }
 
     public void onHostPause() {
-        super.onViewDisappear();
+        overlayManager.onHostPause();
+        if (!modalStack.isEmpty()) {
+            modalStack.onHostPause();
+            if(modalStack.peekDisplayedOverCurrentContext()){
+                onViewDisappear();
+            }
+        } else {
+            onViewDisappear();
+        }
     }
 
     public void onHostResume() {
-        super.onViewDidAppear();
+        overlayManager.onHostResume();
+        if (!modalStack.isEmpty()) {
+            modalStack.onHostResume();
+            if(modalStack.peekDisplayedOverCurrentContext()){
+                onViewDidAppear();
+            }
+        } else {
+            onViewDidAppear();
+        }
     }
 }

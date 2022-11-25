@@ -21,16 +21,17 @@ Pod::Spec.new do |s|
     s.exclude_files       = "lib/ios/ReactNativeNavigationTests/**/*.*", "lib/ios/OCMock/**/*.*"
   end
   
-  s.subspec 'Fabric' do |ss|
-    ss.xcconfig = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost-for-react-native\" \"$(PODS_ROOT)/RCT-Folly\"",
-                    "OTHER_CFLAGS" => "$(inherited) -DRN_FABRIC_ENABLED -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1" }
-    ss.dependency 'React-RCTFabric'
-    ss.dependency 'React-Fabric'
-    ss.dependency 'RCT-Folly/Fabric'
-  end
+  # s.subspec 'Fabric' do |ss|
+  #   ss.xcconfig = { "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost-for-react-native\" \"$(PODS_ROOT)/RCT-Folly\"",
+  #                   "OTHER_CFLAGS" => "$(inherited) -DRN_FABRIC_ENABLED -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1" }
+  #   ss.dependency 'React-RCTFabric'
+  #   ss.dependency 'React-Fabric'
+  #   ss.dependency 'RCT-Folly/Fabric'
+  # end
 
   s.dependency 'React-Core'
   s.dependency 'React-RCTImage'
   s.dependency 'React-RCTText'
+  s.dependency 'HMSegmentedControl'
   s.frameworks = 'UIKit'
 end

@@ -5,6 +5,9 @@ import animations from './Animations';
 const setDefaultOptions = () =>
   Navigation.setDefaultOptions({
     animations,
+    statusBar: {
+      backgroundColor: Colors.statusBarColor,
+    },
     window: {
       backgroundColor: Colors.primary,
     },
@@ -24,7 +27,8 @@ const setDefaultOptions = () =>
     },
     bottomTabs: {
       backgroundColor: Colors.barBackground,
-      tabsAttachMode: 'onSwitchToTab',
+      tabsAttachMode: 'afterInitialTab',
+      elevation: 8,
       titleDisplayMode: 'alwaysShow',
     },
     bottomTab: {

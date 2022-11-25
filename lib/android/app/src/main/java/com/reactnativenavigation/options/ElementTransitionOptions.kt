@@ -1,8 +1,11 @@
 package com.reactnativenavigation.options
 
 import android.animation.Animator
+<<<<<<< HEAD
 import android.animation.AnimatorSet
 import android.util.Property
+=======
+>>>>>>> d936545ffdce2eb4e671aeca6f390c767517e4c2
 import android.view.View
 import org.json.JSONObject
 
