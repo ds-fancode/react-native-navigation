@@ -106,7 +106,6 @@ public class Navigator extends ParentController<ViewGroup> {
     }
 
 
-
     public void bindViews() {
         modalStack.setModalsLayout(modalsLayout);
         modalStack.setRootLayout(rootLayout);
@@ -206,7 +205,7 @@ public class Navigator extends ParentController<ViewGroup> {
         }
     }
 
-    public void setStackRoot(String id, List<ViewController> children, CommandListener listener) {
+    public void setStackRoot(String id, List<ViewController<?>> children, CommandListener listener) {
         applyOnStack(id, listener, stack -> stack.setRoot(children, listener));
     }
 
@@ -355,11 +354,14 @@ public class Navigator extends ParentController<ViewGroup> {
         super.onConfigurationChanged(newConfig);
     }
 
+
     public void updatePIPState(PIPStates newPIPState) {
         logger.log(Log.INFO, TAG, "pipState " + newPIPState);
         switch (newPIPState) {
             case MOUNT_START:
-                pipNavigator.pushPIP(activeStack.switchToPIP(null), false);
+                if (Build.VERSION.SDK_INT > 23) {
+                    pipNavigator.pushPIP(activeStack.switchToPIP(null), false);
+                }
                 break;
             case NATIVE_MOUNTED:
                 pipNavigator.updatePIPState(newPIPState);
@@ -382,15 +384,17 @@ public class Navigator extends ParentController<ViewGroup> {
                 }
                 break;
             case NATIVE_MOUNT_START:
-                rootLayout.setVisibility(View.INVISIBLE);
-                modalsLayout.setVisibility(View.INVISIBLE);
-                overlaysLayout.setVisibility(View.INVISIBLE);
-                pipNavigator.getView().setVisibility(View.VISIBLE);
-                if (getPipMode() == PIPStates.NOT_STARTED && activeStack != null) {
-                    pipNavigator.updatePIPState(newPIPState);
-                    pipNavigator.pushPIP(activeStack.switchToPIP(null), true);
-                } else {
-                    pipNavigator.updatePIPState(newPIPState);
+                if (Build.VERSION.SDK_INT > 23) {
+                    rootLayout.setVisibility(View.INVISIBLE);
+                    modalsLayout.setVisibility(View.INVISIBLE);
+                    overlaysLayout.setVisibility(View.INVISIBLE);
+                    pipNavigator.getView().setVisibility(View.VISIBLE);
+                    if (getPipMode() == PIPStates.NOT_STARTED && activeStack != null) {
+                        pipNavigator.updatePIPState(newPIPState);
+                        pipNavigator.pushPIP(activeStack.switchToPIP(null), true);
+                    } else {
+                        pipNavigator.updatePIPState(newPIPState);
+                    }
                 }
                 break;
             default:
@@ -401,11 +405,11 @@ public class Navigator extends ParentController<ViewGroup> {
     }
 
     public boolean shouldSwitchToPIPonHomePress() {
-        return (getPipMode() != PIPStates.NOT_STARTED || (this.activeStack != null && this.activeStack.shouldSwitchToPIPOnHomePress())) && modalStack.isEmpty() && overlayManager.isEmpty();
+        return (getPipMode() != PIPStates.NOT_STARTED || (this.activeStack != null && this.activeStack.shouldSwitchToPIPOnHomePress())) && modalStack.isEmpty() && overlayManager.isEmptyStack();
     }
 
     public boolean shouldSwitchToPIPonBackPress() {
-        return (this.activeStack != null && this.activeStack.shouldSwitchToPIPOnBackPress()) && modalStack.isEmpty() && overlayManager.isEmpty();
+        return (this.activeStack != null && this.activeStack.shouldSwitchToPIPOnBackPress()) && modalStack.isEmpty() && overlayManager.isEmptyStack();
     }
 
     public void resetPIP() {
@@ -465,7 +469,7 @@ public class Navigator extends ParentController<ViewGroup> {
         overlayManager.onHostPause();
         if (!modalStack.isEmpty()) {
             modalStack.onHostPause();
-            if(modalStack.peekDisplayedOverCurrentContext()){
+            if (modalStack.peekDisplayedOverCurrentContext()) {
                 onViewDisappear();
             }
         } else {
@@ -477,7 +481,7 @@ public class Navigator extends ParentController<ViewGroup> {
         overlayManager.onHostResume();
         if (!modalStack.isEmpty()) {
             modalStack.onHostResume();
-            if(modalStack.peekDisplayedOverCurrentContext()){
+            if (modalStack.peekDisplayedOverCurrentContext()) {
                 onViewDidAppear();
             }
         } else {

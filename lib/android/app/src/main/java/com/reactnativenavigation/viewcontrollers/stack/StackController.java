@@ -345,7 +345,6 @@ public class StackController extends ParentController<StackLayout> {
         }
     }
 
-<<<<<<< HEAD
     public ViewController switchToPIP(Options mergeOptions) {
         if (!canPop()) {
             //listener.onError("Nothing to pop");
@@ -376,10 +375,8 @@ public class StackController extends ParentController<StackLayout> {
         return peek() != null && peek().options.pipOptions.enabledOnBackPress;
     }
 
-    private void finishPopping(ViewController appearing, ViewController disappearing, CommandListener listener) {
-=======
+
     private void finishPopping(ViewController<?> appearing, ViewController<?> disappearing, CommandListener listener) {
->>>>>>> d936545ffdce2eb4e671aeca6f390c767517e4c2
         appearing.onViewDidAppear();
         disappearing.destroy();
         listener.onSuccess(disappearing.getId());

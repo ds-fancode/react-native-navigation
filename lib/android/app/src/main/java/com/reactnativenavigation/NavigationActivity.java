@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.PermissionAwareActivity;
 import com.facebook.react.modules.core.PermissionListener;
+import com.reactnativenavigation.viewcontrollers.overlay.OverlayManager;
 import com.reactnativenavigation.viewcontrollers.viewcontroller.RootPresenter;
 import com.reactnativenavigation.react.CommandListenerAdapter;
 import com.reactnativenavigation.react.JsDevReloadHandler;

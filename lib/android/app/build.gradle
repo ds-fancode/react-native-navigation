@@ -149,7 +149,7 @@ String resolveFlavor() {
 
 
 Object findReactNativePackageJson() {
-    def searchPath = 'lib/node_modules/react-native/package.json'
+    def searchPath = 'node_modules/react-native/package.json'
     def projectDir = project.projectDir.toString() + '/'
     def rnPackageJsonFile = new File(projectDir + searchPath)
     while (!rnPackageJsonFile.exists()) {
