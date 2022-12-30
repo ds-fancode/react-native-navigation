@@ -48,7 +48,8 @@ export class NavigationRoot {
 
   constructor(
     private readonly nativeCommandsSender: NativeCommandsSender,
-    private readonly nativeEventsReceiver: NativeEventsReceiver
+    private readonly nativeEventsReceiver: NativeEventsReceiver,
+    private readonly appRegistryService: AppRegistryService
   ) {
     this.componentWrapper = new ComponentWrapper();
     this.store = new Store();
@@ -59,12 +60,12 @@ export class NavigationRoot {
       this.nativeEventsReceiver,
       this.store
     );
-    const appRegistryService = new AppRegistryService();
+
     this.componentRegistry = new ComponentRegistry(
       this.store,
       this.componentEventsObserver,
       this.componentWrapper,
-      appRegistryService
+      this.appRegistryService
     );
     this.layoutTreeParser = new LayoutTreeParser(this.uniqueIdProvider);
     const optionsProcessor = new OptionsProcessor(
@@ -187,8 +188,8 @@ export class NavigationRoot {
   /**
    * Update a mounted component's props
    */
-  public updateProps(componentId: string, props: object) {
-    this.commands.updateProps(componentId, props);
+  public updateProps(componentId: string, props: object, callback?: () => void) {
+    this.commands.updateProps(componentId, props, callback);
   }
 
   /**
@@ -247,7 +248,7 @@ export class NavigationRoot {
     componentId: string,
     layout: Layout<P> | Array<Layout<P>>
   ): Promise<string> {
-    const children: Layout[] = isArray(layout) ? layout : [layout];
+    const children: Layout<P | []>[] = isArray(layout) ? layout : [layout];
     return this.commands.setStackRoot(componentId, children);
   }
 
@@ -290,7 +291,7 @@ export class NavigationRoot {
    * Constants coming from native
    */
   public async constants(): Promise<NavigationConstants> {
-    return await Constants.get();
+    return await Constants.get(this.nativeCommandsSender);
   }
 
   /**
@@ -332,6 +333,6 @@ export class NavigationRoot {
    * Constants coming from native (synchronized call)
    */
   public constantsSync(): NavigationConstants {
-    return Constants.getSync();
+    return Constants.getSync(this.nativeCommandsSender);
   }
 }

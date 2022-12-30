@@ -2,6 +2,8 @@ package com.reactnativenavigation.options;
 
 import android.content.Context;
 
+
+import com.reactnativenavigation.options.layout.LayoutOptions;
 import com.reactnativenavigation.options.params.NullNumber;
 import com.reactnativenavigation.options.params.NullText;
 import com.reactnativenavigation.options.parsers.TypefaceLoader;
@@ -16,7 +18,7 @@ public class Options {
     public JSONObject valueJson = new JSONObject();
 
     @NonNull
-    public static Options parse(Context context, TypefaceLoader typefaceManager, JSONObject json) {
+    public static Options parse(@NonNull Context context, TypefaceLoader typefaceManager, JSONObject json) {
         Options result = new Options();
         if (json == null) return result;
         result.valueJson = json;

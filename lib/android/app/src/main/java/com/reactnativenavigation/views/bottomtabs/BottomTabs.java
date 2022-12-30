@@ -2,6 +2,7 @@ package com.reactnativenavigation.views.bottomtabs;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -28,7 +29,7 @@ public class BottomTabs extends AHBottomNavigation {
     public BottomTabs(Context context) {
         super(context);
         setId(R.id.bottomTabs);
-        hideBottomNavigation(false);
+        setDefaultBackgroundColor(Color.TRANSPARENT);
     }
 
     public void disableItemsCreation() {
@@ -91,8 +92,8 @@ public class BottomTabs extends AHBottomNavigation {
 
     @Override
     public void restoreBottomNavigation(boolean withAnimation) {
-        this.setVisibility(VISIBLE);
         super.restoreBottomNavigation(withAnimation);
+        if (!withAnimation) setVisibility(View.VISIBLE);
     }
 
     @Override

@@ -1,4 +1,5 @@
 import { NativeModules } from 'react-native';
+import { NavigationConstants } from './Constants';
 import { Options } from '..';
 
 interface NativeCommandsModule {
@@ -29,6 +30,8 @@ interface NativeCommandsModule {
   dismissOverlay(commandId: string, componentId: string): Promise<any>;
   dismissAllOverlays(commandId: string): Promise<any>;
   getLaunchArgs(commandId: string): Promise<any>;
+  getNavigationConstants(): Promise<NavigationConstants>;
+  getNavigationConstantsSync(): NavigationConstants;
 
   pushAsPIP(commandId: string, onComponentId: string, component: object): Promise<any>;
 
@@ -126,5 +129,13 @@ export class NativeCommandsSender {
 
   setPIPHostId(componentId: string) {
     return this.nativeCommandsModule.setPIPHostId(componentId);
+  }
+
+  getNavigationConstants() {
+    return this.nativeCommandsModule.getNavigationConstants();
+  }
+
+  getNavigationConstantsSync() {
+    return this.nativeCommandsModule.getNavigationConstantsSync();
   }
 }

@@ -3,7 +3,7 @@ package com.reactnativenavigation.viewcontrollers.bottomtabs
 import android.animation.AnimatorSet
 import android.content.res.Configuration
 import android.graphics.Color
-import com.nhaarman.mockitokotlin2.*
+import org.mockito.kotlin.*
 import com.reactnativenavigation.BaseTest
 import com.reactnativenavigation.mocks.SimpleViewController
 import com.reactnativenavigation.options.Options
@@ -68,7 +68,7 @@ class BottomTabsPresenterTest : BaseTest() {
         val options = Options()
         options.bottomTabsOptions.backgroundColor = ThemeColour(Colour(10))
         uut.mergeChildOptions(options, tabs[0])
-        verify(bottomTabs).setBackgroundColor(options.bottomTabsOptions.backgroundColor.get())
+        verify(bottomTabsContainer).setBackgroundColor(options.bottomTabsOptions.backgroundColor.get())
         verifyNoMoreInteractions(bottomTabs)
     }
 
