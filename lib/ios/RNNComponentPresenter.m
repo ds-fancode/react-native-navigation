@@ -41,10 +41,6 @@
     [_buttonsPresenter componentDidDisappear];
 }
 
-- (void)applyOptionsOnWillMoveToParentViewController:(RNNNavigationOptions *)options {
-    [super applyOptionsOnWillMoveToParentViewController:options];
-}
-
 - (void)applyOptions:(RNNNavigationOptions *)options {
     [super applyOptions:options];
 
@@ -83,6 +79,8 @@
                                  backgroundColor:[options.topBar.searchBar.backgroundColor
                                                      withDefault:nil]
                                        tintColor:[options.topBar.searchBar.tintColor
+                                                     withDefault:nil]
+                                      cancelText:[withDefault.topBar.searchBar.cancelText
                                                      withDefault:nil]];
     }
 
@@ -145,6 +143,8 @@
                                  backgroundColor:[mergeOptions.topBar.searchBar.backgroundColor
                                                      withDefault:nil]
                                        tintColor:[mergeOptions.topBar.searchBar.tintColor
+                                                     withDefault:nil]
+                                      cancelText:[withDefault.topBar.searchBar.cancelText
                                                      withDefault:nil]];
     } else {
         [viewController setSearchBarVisible:NO];
@@ -209,11 +209,19 @@
     }
 
     if (mergeOptions.topBar.leftButtonColor.hasValue) {
-        [_buttonsPresenter applyLeftButtonsColor:mergeOptions.topBar.leftButtonColor.get];
+        [_buttonsPresenter applyLeftButtonsColor:mergeOptions.topBar.leftButtonColor];
     }
 
     if (mergeOptions.topBar.rightButtonColor.hasValue) {
-        [_buttonsPresenter applyRightButtonsColor:mergeOptions.topBar.rightButtonColor.get];
+        [_buttonsPresenter applyRightButtonsColor:mergeOptions.topBar.rightButtonColor];
+    }
+    
+    if (mergeOptions.topBar.rightButtonBackgroundColor.hasValue) {
+        [_buttonsPresenter applyRightButtonsBackgroundColor:mergeOptions.topBar.rightButtonBackgroundColor];
+    }
+    
+    if (mergeOptions.topBar.leftButtonBackgroundColor.hasValue) {
+        [_buttonsPresenter applyLeftButtonsBackgroundColor:mergeOptions.topBar.leftButtonBackgroundColor];
     }
 
     if (mergeOptions.overlay.interceptTouchOutside.hasValue) {

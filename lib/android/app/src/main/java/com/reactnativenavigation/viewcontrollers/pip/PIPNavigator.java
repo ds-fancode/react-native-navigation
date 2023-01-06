@@ -84,8 +84,8 @@ public class PIPNavigator extends ParentController<PIPContainer> {
 
     @NonNull
     @Override
-    public Collection<? extends ViewController> getChildControllers() {
-        ArrayList<ViewController> children = new ArrayList<>();
+    public Collection<? extends ViewController<?>> getChildControllers() {
+        ArrayList<ViewController<?>> children = new ArrayList<>();
         if (childController != null) children.add(childController);
         return children;
     }

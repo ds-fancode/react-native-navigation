@@ -1,10 +1,11 @@
 // tslint:disable jsdoc-format
-import { ImageRequireSource, ImageSourcePropType, Insets } from 'react-native';
+
 import { PIPActionButton } from './Layout';
+import { ImageRequireSource, ImageSourcePropType, Insets, OpaqueColorValue } from 'react-native';
 
 // TODO: Import ColorValue instead when upgrading @types/react-native to 0.63+
 // Only assign PlatformColor or DynamicColorIOS as a Color symbol!
-export declare type Color = string | symbol | ThemeColor | null;
+export declare type Color = string | symbol | ThemeColor | OpaqueColorValue | null;
 type FontFamily = string;
 type FontStyle = 'normal' | 'italic';
 type FontWeightIOS =
@@ -34,7 +35,12 @@ type FontWeight =
   | '800'
   | '900'
   | FontWeightIOS;
-export type LayoutOrientation = 'portrait' | 'landscape';
+export type LayoutOrientation =
+  | 'portrait'
+  | 'landscape'
+  | 'sensor'
+  | 'sensorLandscape'
+  | 'sensorPortrait';
 type AndroidDensityNumber = number;
 export type SystemItemIcon =
   | 'done'
@@ -138,7 +144,7 @@ export interface OptionsStatusBar {
    * Animate StatusBar style changes.
    * #### (iOS specific)
    */
-  animated?: boolean;
+  animate?: boolean;
   /**
    * Automatically hide the StatusBar when the TopBar hides.
    * #### (iOS specific)
@@ -183,6 +189,18 @@ export interface OptionsLayout {
    * #### (iOS specific)
    */
   autoHideHomeIndicator?: boolean;
+
+  /**
+   * Add insets to the top layout
+   */
+  insets?: Insets;
+
+  /**
+   * Resizes the layout when keyboard is visible
+   * @default true
+   * #### (Android specific)
+   */
+  adjustResize?: boolean;
 }
 
 export enum OptionsModalPresentationStyle {
@@ -340,6 +358,11 @@ export interface OptionsTopBarBackButton {
    */
   icon?: ImageResource;
   /**
+   * SF Symbol to show as the back button
+   * #### (iOS 13+ specific)
+   */
+  sfSymbol?: string;
+  /**
    * Weither the back button is visible or not
    * @default true
    */
@@ -412,6 +435,11 @@ export interface HardwareBackButtonOptions {
    * @default true
    */
   popStackOnPress?: boolean;
+
+  /**
+   * Controls hardware back button bottom tab selection behaviour
+   */
+  bottomTabsOnPress?: 'exit' | 'first' | 'previous';
 }
 
 export interface OptionsTopBarScrollEdgeAppearanceBackground {
@@ -486,6 +514,11 @@ export interface OptionsTopBarButton {
    * Set the button icon
    */
   icon?: ImageResource;
+  /**
+   * Set the SF symbol as icon (will be used primarily)
+   * #### (iOS 13+ specific)
+   */
+  sfSymbol?: string;
   /**
    * Set the button icon insets
    */
@@ -586,6 +619,7 @@ export interface OptionsSearchBar {
   backgroundColor?: Color;
   tintColor?: Color;
   placeholder?: string;
+  cancelText?: string;
 }
 
 export interface OptionsTopBar {
@@ -607,6 +641,8 @@ export interface OptionsTopBar {
 
   leftButtonColor?: Color;
   rightButtonColor?: Color;
+  leftButtonBackgroundColor?: Color;
+  rightButtonBackgroundColor?: Color;
   leftButtonDisabledColor?: Color;
   rightButtonDisabledColor?: Color;
   /**
@@ -930,7 +966,7 @@ export interface OptionsBottomTab {
   /**
    * Set the background color of the badge that is overlayed over the component
    */
-  badgeColor?: string;
+  badgeColor?: Color;
   /**
    * Show the badge with the animation.
    * #### (Android specific)
@@ -1017,6 +1053,21 @@ export interface OptionsBottomTab {
    * instead it will emit a bottomTabPressedEvent
    */
   selectTabOnPress?: boolean;
+  /**
+   * Pop to root of stack by tapping on already selected tab
+   * #### (Android specific)
+   */
+  popToRoot?: boolean;
+  /**
+   * Set the SF symbol as icon (will be used primarily)
+   * #### (iOS 13+ specific)
+   */
+  sfSymbol?: string;
+  /**
+   * Set the SF symbol as selected icon (will be used primarily)
+   * #### (iOS 13+ specific)
+   */
+  sfSelectedSymbol?: string;
 }
 
 export interface SideMenuSide {

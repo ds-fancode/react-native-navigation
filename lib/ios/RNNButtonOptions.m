@@ -11,6 +11,7 @@
     self.fontWeight = [TextParser parse:dict key:@"fontWeight"];
     self.fontSize = [NumberParser parse:dict key:@"fontSize"];
     self.text = [TextParser parse:dict key:@"text"];
+    self.sfSymbol = [TextParser parse:dict key:@"sfSymbol"];
     self.testID = [TextParser parse:dict key:@"testID"];
     self.accessibilityLabel = [TextParser parse:dict key:@"accessibilityLabel"];
     self.color = [ColorParser parse:dict key:@"color"];
@@ -39,6 +40,7 @@
     newOptions.color = self.color.copy;
     newOptions.disabledColor = self.disabledColor.copy;
     newOptions.icon = self.icon.copy;
+    newOptions.sfSymbol = self.sfSymbol.copy;
     newOptions.iconInsets = self.iconInsets.copy;
     newOptions.enabled = self.enabled.copy;
     newOptions.selectTabOnPress = self.selectTabOnPress.copy;
@@ -71,6 +73,8 @@
         self.disabledColor = options.disabledColor;
     if (options.icon.hasValue)
         self.icon = options.icon;
+    if (options.sfSymbol.hasValue)
+        self.sfSymbol = options.sfSymbol;
     if (options.enabled.hasValue) {
         self.enabled = options.enabled;
         [self.iconBackground setEnabled:self.enabled];
@@ -89,11 +93,11 @@
     return [self.enabled withDefault:YES];
 }
 
-- (UIColor *)resolveColor {
+- (Color *)resolveColor {
     if (![_enabled withDefault:YES] && _disabledColor.hasValue)
-        return _disabledColor.get;
+        return _disabledColor;
     else
-        return [_color withDefault:nil];
+        return _color;
 }
 
 - (RNNButtonOptions *)withDefault:(RNNButtonOptions *)defaultOptions {
@@ -110,6 +114,10 @@
     if (!self.disabledColor.hasValue)
         self.disabledColor = disabledColor;
     return self;
+}
+
+- (UIControlState)state {
+    return self.isEnabled ? UIControlStateNormal : UIControlStateDisabled;
 }
 
 @end

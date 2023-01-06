@@ -11,12 +11,32 @@
 
 @end
 
-@implementation RNNUIBarButtonItem
+@implementation RNNUIBarButtonItem {
+    RNNIconCreator* _iconCreator;
+    RNNButtonOptions* _buttonOptions;
+}
 
 - (instancetype)init {
     self = [super init];
     self.target = self;
     self.action = @selector(onButtonPressed:);
+    return self;
+}
+
+- (instancetype)initWithSFSymbol:(RNNButtonOptions *)buttonOptions
+                         onPress:(RNNButtonPressCallback)onPress {
+    UIImage *iconImage = [UIImage alloc];
+
+    if (@available(iOS 13.0, *)) {
+        iconImage = [UIImage systemImageNamed:[buttonOptions.sfSymbol withDefault:nil]];
+    }
+
+    self = [super initWithImage:iconImage
+                          style:UIBarButtonItemStylePlain
+                         target:self
+                         action:@selector(onButtonPressed:)];
+    [self applyOptions:buttonOptions];
+    self.onPress = onPress;
     return self;
 }
 
@@ -35,16 +55,17 @@
 - (instancetype)initCustomIcon:(RNNButtonOptions *)buttonOptions
                    iconCreator:(RNNIconCreator *)iconCreator
                        onPress:(RNNButtonPressCallback)onPress {
-    UIImage *icon = [iconCreator create:buttonOptions];
+    _iconCreator = iconCreator;
+    UIImage *icon = [_iconCreator create:buttonOptions];
     UIButton *button =
         [[UIButton alloc] initWithFrame:CGRectMake(0, 0, icon.size.width, icon.size.height)];
-
     [button addTarget:self
                   action:@selector(onButtonPressed:)
         forControlEvents:UIControlEventTouchUpInside];
     [button setImage:icon
             forState:buttonOptions.isEnabled ? UIControlStateNormal : UIControlStateDisabled];
-
+    [button.widthAnchor constraintEqualToConstant:icon.size.width].active = YES;
+    [button.heightAnchor constraintEqualToConstant:icon.size.height].active = YES;
     self = [super initWithCustomView:button];
     [self applyOptions:buttonOptions];
     self.onPress = onPress;
@@ -108,6 +129,7 @@
 }
 
 - (void)applyOptions:(RNNButtonOptions *)buttonOptions {
+    _buttonOptions = buttonOptions;
     self.buttonId = buttonOptions.identifier.get;
     self.accessibilityLabel = [buttonOptions.accessibilityLabel withDefault:nil];
     self.enabled = [buttonOptions.enabled withDefault:YES];
@@ -117,17 +139,35 @@
     [self applyDisabledTitleTextAttributes:buttonOptions];
 }
 
-- (void)applyColor:(UIColor *)color {
-    if (color) {
+- (void)applyColor:(Color *)color {
+    if (color.hasValue) {
         NSMutableDictionary *titleTextAttributes = [NSMutableDictionary
             dictionaryWithDictionary:[self titleTextAttributesForState:UIControlStateNormal]];
-        [titleTextAttributes setValue:color forKey:NSForegroundColorAttributeName];
+        [titleTextAttributes setValue:color.get forKey:NSForegroundColorAttributeName];
         [self setTitleTextAttributes:titleTextAttributes forState:UIControlStateNormal];
         [self setTitleTextAttributes:titleTextAttributes forState:UIControlStateHighlighted];
     } else
         self.image = [self.image imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
 
-    self.tintColor = color;
+    self.tintColor = color.get;
+}
+
+- (void)mergeBackgroundColor:(Color *)color {
+    _buttonOptions.iconBackground.color = color;
+    [self redrawIcon];
+}
+
+- (void)mergeColor:(Color *)color {
+    _buttonOptions.color = color;
+    [self applyColor:color];
+    [self redrawIcon];
+}
+
+- (void)redrawIcon {
+    if (_buttonOptions.icon.hasValue && [self.customView isKindOfClass:UIButton.class]) {
+        UIImage* icon = [_iconCreator create:_buttonOptions];
+        [(UIButton *)self.customView setImage:icon forState:_buttonOptions.state];
+    }
 }
 
 - (void)applyTitleTextAttributes:(RNNButtonOptions *)button {
