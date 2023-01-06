@@ -100,7 +100,14 @@ public abstract class ChildController<T extends ViewGroup> extends ViewControlle
     }
 
     protected WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
-        return insets;
+        WindowInsetsCompat finalInsets = new WindowInsetsCompat.Builder()
+                .setInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime(),
+                        Insets.of(0,
+                                0,
+                                0,
+                                0))
+                .build();
+        return finalInsets;
     }
 
     @Override
