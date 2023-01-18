@@ -272,10 +272,38 @@ public class StackPresenter {
             topBar.setTopPadding(SystemUiUtils.getStatusBarHeight(activity));
             topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity))
                     + SystemUiUtils.getStatusBarHeightDp(activity));
+
         } else {
             topBar.setTopPadding(0);
             topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity)));
         }
+    }
+
+    private void mergeStatusBarDrawBehindOptions(TopBarOptions topBarOptions, Options childOptions) {
+        if (childOptions.statusBar.visible.isTrueOrUndefined()) {
+            if (childOptions.statusBar.drawBehind.hasValue()) {
+                if (childOptions.statusBar.drawBehind.isTrue()) {
+                    topBar.setTopPadding(SystemUiUtils.getStatusBarHeight(activity));
+                    topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity))
+                            + SystemUiUtils.getStatusBarHeightDp(activity));
+                } else {
+                    topBar.setTopPadding(0);
+                    topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity)));
+                }
+            }
+        } else {
+            if (childOptions.statusBar.drawBehind.hasValue()) {
+                if (childOptions.statusBar.drawBehind.isFalseOrUndefined()) {
+                    topBar.setTopPadding(SystemUiUtils.getStatusBarHeight(activity));
+                    topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity))
+                            + SystemUiUtils.getStatusBarHeightDp(activity));
+                } else {
+                    topBar.setTopPadding(0);
+                    topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity)));
+                }
+            }
+        }
+
     }
 
     private void mergeStatusBarDrawBehindOptions(TopBarOptions topBarOptions, Options childOptions) {
@@ -316,7 +344,6 @@ public class StackPresenter {
         }
         return null;
     }
-
 
     private void applyTopBarVisibilityIfChildIsNotBeingAnimated(TopBarOptions options, StackController stack,
             ViewController<?> child) {

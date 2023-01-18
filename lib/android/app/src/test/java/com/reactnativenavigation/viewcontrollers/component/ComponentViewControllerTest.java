@@ -11,8 +11,6 @@ import com.reactnativenavigation.mocks.TestComponentLayout;
 import com.reactnativenavigation.mocks.TestReactView;
 import com.reactnativenavigation.options.Options;
 import com.reactnativenavigation.options.params.Bool;
-
-import com.reactnativenavigation.utils.StatusBarUtils;
 import com.reactnativenavigation.utils.SystemUiUtils;
 import com.reactnativenavigation.views.component.ComponentLayout;
 

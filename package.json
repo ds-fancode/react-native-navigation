@@ -1,7 +1,6 @@
 {
-
-  "name": "@dream11mobile/react-native-navigation",
-  "version": "7.30.5",
+  "name": "react-native-navigation",
+  "version": "7.30.6",
   "description": "React Native Navigation - truly native navigation for iOS and Android",
   "license": "MIT",
   "nativePackage": true,
@@ -62,6 +61,7 @@
   },
   "dependencies": {
     "hoist-non-react-statics": "3.x.x",
+    "lodash": "4.17.x",
     "prop-types": "15.x.x",
     "react-lifecycles-compat": "2.0.0",
     "tslib": "1.9.3"

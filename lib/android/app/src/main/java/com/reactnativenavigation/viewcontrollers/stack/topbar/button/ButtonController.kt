@@ -93,6 +93,8 @@ open class ButtonController(
 
     open fun applyBackgroundColor(toolbar: Toolbar, color: ThemeColour) = this.menuItem?.let { presenter.applyBackgroundColor(toolbar, it, color) }
 
+    open fun applyBackgroundColor(toolbar: Toolbar, color: ThemeColour) = this.menuItem?.let { presenter.applyBackgroundColor(toolbar, it, color) }
+
     fun addToMenu(buttonBar: ButtonBar, order: Int) {
         if ((button.component.hasValue() && buttonBar.containsButton(
                 menuItem,

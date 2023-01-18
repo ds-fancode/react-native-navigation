@@ -32,6 +32,10 @@ import com.reactnativenavigation.viewcontrollers.modal.ModalStack;
 import com.reactnativenavigation.viewcontrollers.navigator.Navigator;
 import com.reactnativenavigation.views.pip.PIPStates;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class NavigationActivity extends AppCompatActivity implements DefaultHardwareBackBtnHandler, PermissionAwareActivity, JsDevReloadHandler.ReloadListener {
     @Nullable
@@ -63,6 +67,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             getReactGateway().onActivityCreated(this);
         }
         getApplication().registerActivityLifecycleCallbacks(lifecycleCallback);
+        setBackPressedCallback();
     }
 
 
@@ -271,6 +276,16 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     public void onCatalystInstanceDestroy() {
         runOnUiThread(() -> navigator.destroyViews());
+    }
+
+    private void setBackPressedCallback() {
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                getReactGateway().onBackPressed();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     private Application.ActivityLifecycleCallbacks lifecycleCallback = new Application.ActivityLifecycleCallbacks() {

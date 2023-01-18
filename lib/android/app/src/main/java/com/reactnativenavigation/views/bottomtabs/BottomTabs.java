@@ -100,7 +100,7 @@ public class BottomTabs extends AHBottomNavigation {
     @Override
     public void hideBottomNavigation(boolean withAnimation) {
         super.hideBottomNavigation(withAnimation);
-        setVisibility(View.GONE);
+        if (!withAnimation) setVisibility(View.GONE);
     }
 
     public void setText(int index, String text) {

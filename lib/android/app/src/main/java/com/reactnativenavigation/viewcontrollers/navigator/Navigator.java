@@ -8,12 +8,14 @@ import android.util.Log;
 import android.content.res.Configuration;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.facebook.react.ReactInstanceManager;
 import com.reactnativenavigation.NavigationActivity;
@@ -104,6 +106,8 @@ public class Navigator extends ParentController<ViewGroup> {
         this.pipNavigator.setParentController(this);
         this.pipNavigator.setPipListener(pipListener);
     }
+
+
 
 
     public void bindViews() {
@@ -213,7 +217,7 @@ public class Navigator extends ParentController<ViewGroup> {
         applyOnStack(id, listener, stack -> stack.pop(mergeOptions, listener));
     }
 
-    public void push(final String id, final ViewController viewController, CommandListener listener) {
+    public void push(final String id, final ViewController<?> viewController, CommandListener listener) {
         applyOnStack(id, listener, stack -> {
             this.activeStack = stack;
             stack.push(viewController, listener);
@@ -469,7 +473,7 @@ public class Navigator extends ParentController<ViewGroup> {
         overlayManager.onHostPause();
         if (!modalStack.isEmpty()) {
             modalStack.onHostPause();
-            if (modalStack.peekDisplayedOverCurrentContext()) {
+            if(modalStack.peekDisplayedOverCurrentContext()){
                 onViewDisappear();
             }
         } else {
@@ -481,7 +485,7 @@ public class Navigator extends ParentController<ViewGroup> {
         overlayManager.onHostResume();
         if (!modalStack.isEmpty()) {
             modalStack.onHostResume();
-            if (modalStack.peekDisplayedOverCurrentContext()) {
+            if(modalStack.peekDisplayedOverCurrentContext()){
                 onViewDidAppear();
             }
         } else {
