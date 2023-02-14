@@ -37,6 +37,7 @@ import static com.reactnativenavigation.utils.UiUtils.pxToDp;
 
 import android.app.Activity;
 
+@ReactModule(name = "RNNBridgeModule")
 public class NavigationModule extends ReactContextBaseJavaModule {
     public static final String NAME = "RNNBridgeModule";
 
