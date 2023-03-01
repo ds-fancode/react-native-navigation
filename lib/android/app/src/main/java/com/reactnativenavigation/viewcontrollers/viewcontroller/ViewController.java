@@ -157,10 +157,10 @@ public abstract class ViewController<T extends ViewGroup> implements ViewTreeObs
         }
     }
 
-    public ViewController<?> getTopMostParent() {
-        if (parentController != null) {
+    public ViewController<?> getTopMostParent(){
+        if(parentController!=null){
             return parentController.getTopMostParent();
-        } else {
+        }else{
             return this;
         }
     }

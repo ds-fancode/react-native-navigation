@@ -17,7 +17,6 @@ interface HocProps {
 }
 
 export interface IWrappedComponent extends React.Component {
-
   setProps(newProps: Record<string, any>, callback?: () => void): void;
   isMounted: boolean;
 }
@@ -33,7 +32,6 @@ export class ComponentWrapper {
     reduxStore?: any
   ): React.ComponentClass<any> {
     const GeneratedComponentClass = OriginalComponentGenerator();
-
     class WrappedComponent extends React.Component<HocProps, HocState> {
       static getDerivedStateFromProps(nextProps: any, prevState: HocState) {
         return {
@@ -122,7 +120,6 @@ export class ComponentWrapper {
         );
       }
     }
-
     hoistNonReactStatics(ReduxWrapper, WrappedComponent);
     return ReduxWrapper;
   }

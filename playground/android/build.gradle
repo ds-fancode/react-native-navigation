@@ -6,9 +6,9 @@ buildscript {
         RNNKotlinVersion = kotlinVersion
         detoxKotlinVersion = kotlinVersion
         compileSdkVersion = 33
-        buildToolsVersion = '33.0.0'
+        buildToolsVersion = "31.0.0"
         minSdkVersion = 21
-        targetSdkVersion = 33
+        targetSdkVersion = 31
     }
 
     repositories {

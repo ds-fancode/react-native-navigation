@@ -37,13 +37,13 @@ public class ComponentViewController extends ChildController<ComponentLayout> {
     private VisibilityState lastVisibilityState = VisibilityState.Disappear;
 
     public ComponentViewController(final Activity activity,
-                                   final ChildControllersRegistry childRegistry,
-                                   final String id,
-                                   final String componentName,
-                                   final ReactViewCreator viewCreator,
-                                   final Options initialOptions,
-                                   final Presenter presenter,
-                                   final ComponentPresenter componentPresenter) {
+            final ChildControllersRegistry childRegistry,
+            final String id,
+            final String componentName,
+            final ReactViewCreator viewCreator,
+            final Options initialOptions,
+            final Presenter presenter,
+            final ComponentPresenter componentPresenter) {
         super(activity, childRegistry, id, presenter, initialOptions);
         this.componentName = componentName;
         this.viewCreator = viewCreator;

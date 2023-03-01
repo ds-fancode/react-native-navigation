@@ -272,6 +272,7 @@ public class StackPresenter {
             topBar.setTopPadding(SystemUiUtils.getStatusBarHeight(activity));
             topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity))
                     + SystemUiUtils.getStatusBarHeightDp(activity));
+
         } else {
             topBar.setTopPadding(0);
             topBar.setHeight(topBarOptions.height.get(UiUtils.getTopBarHeightDp(activity)));
@@ -316,7 +317,6 @@ public class StackPresenter {
         }
         return null;
     }
-
 
     private void applyTopBarVisibilityIfChildIsNotBeingAnimated(TopBarOptions options, StackController stack,
             ViewController<?> child) {

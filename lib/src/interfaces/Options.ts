@@ -82,12 +82,10 @@ export type Interpolation =
       allowsOverdamping?: boolean;
       initialVelocity?: number;
     };
-
 interface ThemeColor {
   light?: string | symbol;
   dark?: string | symbol;
 }
-
 export interface OptionsSplitView {
   /**
    * Master view display mode

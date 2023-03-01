@@ -81,7 +81,11 @@ public class UiUtils {
     }
 
     public static void runOnMainThread(Runnable runnable) {
-        new Handler(Looper.getMainLooper()).post(runnable);
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            new Handler(Looper.getMainLooper()).postAtFrontOfQueue(runnable);
+        } else {
+            new Handler(Looper.getMainLooper()).post(runnable);
+        }
     }
 
     public static float getWindowHeight(Context context) {
@@ -151,7 +155,7 @@ public class UiUtils {
         if (dp <= 0) return dp;
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
-        return (int) (dp * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
+        return (int) (dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     public static float pxToDp(Context context, float px) {
