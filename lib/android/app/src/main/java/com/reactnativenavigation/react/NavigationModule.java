@@ -148,7 +148,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void closePIP(String commandId, Promise promise) {
-        handle(() ->  navigator().closePIP(new NativeCommandListener("closePIP", commandId, promise, eventEmitter, now)));
+        handle(() -> navigator().closePIP(new NativeCommandListener("closePIP", commandId, promise, eventEmitter, now)));
     }
 
     @ReactMethod
@@ -265,7 +265,13 @@ public class NavigationModule extends ReactContextBaseJavaModule {
         @Override
         public void onHostPause() {
             super.onHostPause();
-            UiUtils.runOnMainThread(() -> navigator().onHostPause());
+            UiUtils.runOnMainThread(() -> {
+                try {
+                    navigator().onHostPause();
+                } catch (Exception e) {
+                  
+                }
+            });
         }
 
         @Override
