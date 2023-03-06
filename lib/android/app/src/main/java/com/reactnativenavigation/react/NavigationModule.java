@@ -269,7 +269,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
                 try {
                     navigator().onHostPause();
                 } catch (Exception e) {
-                  
+
                 }
             });
         }
