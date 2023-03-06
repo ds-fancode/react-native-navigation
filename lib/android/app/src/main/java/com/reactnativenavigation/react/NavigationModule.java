@@ -273,13 +273,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
                 }
             });
         }
-
-        @Override
-        public void onHostDestroy() {
-            super.onHostDestroy();
-            getReactApplicationContext().removeLifecycleEventListener(listenerAdapter);
-        }
-
+        
         @Override
         public void onHostResume() {
             eventEmitter = new EventEmitter(getReactApplicationContext());
