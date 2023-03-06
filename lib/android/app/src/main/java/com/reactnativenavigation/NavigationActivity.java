@@ -45,6 +45,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     private ILogger logger;
     private static String TAG = "NavigationActivity";
     private boolean navigatingToAnotherActivity = false;
+    private OnBackPressedCallback callback;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -169,8 +170,10 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             navigator.updatePIPState(PIPStates.MOUNT_START);
         } else if (!navigator.handleBack(new CommandListenerAdapter())) {
             try {
-                super.onBackPressed();
+                callback.setEnabled(false);
+                NavigationActivity.super.onBackPressed();
                 navigator.forceClosePIP();
+                callback.setEnabled(true);
                 handleExit();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -194,16 +197,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         super.onActivityResult(requestCode, resultCode, data);
         logger.log(Log.VERBOSE, TAG, "onStop PIPMode " + navigator.getPipMode());
         getReactGateway().onActivityResult(this, requestCode, resultCode, data);
-    }
-
-    @Override
-    public void onBackPressed() {
-        logger.log(Log.VERBOSE, TAG, "onBackPressed PIPMode " + navigator.getPipMode());
-        if (navigator.resolveCurrentOptions().bottomTabsOptions.resetToFirstTabOnBack.isTrue()) {
-            invokeDefaultOnBackPressed();
-        } else {
-            getReactGateway().onBackPressed();
-        }
     }
 
     @Override
@@ -281,7 +274,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     }
 
     private void setBackPressedCallback() {
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 getReactGateway().onBackPressed();
