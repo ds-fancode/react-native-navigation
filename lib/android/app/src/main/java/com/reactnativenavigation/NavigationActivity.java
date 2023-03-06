@@ -45,6 +45,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     private ILogger logger;
     private static String TAG = "NavigationActivity";
     private boolean navigatingToAnotherActivity = false;
+    private OnBackPressedCallback callback;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -91,6 +92,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onResume() {
         super.onResume();
         navigatingToAnotherActivity = false;
+        NavigationApplication.instance.navigatingToAnotherActivity = false;
         logger.log(Log.INFO, TAG, "onResume PIPMode " + navigator.getPipMode());
         if (navigator.getPipMode() == PIPStates.NOT_STARTED) {
             getReactGateway().onActivityResumed(this);
@@ -133,14 +135,14 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
         logger.log(Log.INFO, TAG, "onUserLeaveHint shouldSwitchToPIP " + navigator.shouldSwitchToPIPonHomePress() + "  PIPMode " + navigator.getPipMode());
-        if (!navigatingToAnotherActivity && navigator.shouldSwitchToPIPonHomePress() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && canEnterPiPMode()) {
+        if (!isNavigatingToAnotherActivity() && navigator.shouldSwitchToPIPonHomePress() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && canEnterPiPMode()) {
             navigator.updatePIPState(PIPStates.NATIVE_MOUNT_START);
             try {
                 enterPictureInPictureMode(navigator.getPictureInPictureParams());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else if (!navigatingToAnotherActivity && navigator.shouldSwitchToPIPonHomePress() &&
+        } else if (!isNavigatingToAnotherActivity() && navigator.shouldSwitchToPIPonHomePress() &&
                 (navigator.getPipMode() == PIPStates.CUSTOM_MOUNTED || navigator.getPipMode() == PIPStates.CUSTOM_COMPACT)) {
             navigator.updatePIPState(PIPStates.UNMOUNT_START);
         }
@@ -168,8 +170,10 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             navigator.updatePIPState(PIPStates.MOUNT_START);
         } else if (!navigator.handleBack(new CommandListenerAdapter())) {
             try {
-                super.onBackPressed();
+                callback.setEnabled(false);
+                NavigationActivity.super.onBackPressed();
                 navigator.forceClosePIP();
+                callback.setEnabled(true);
                 handleExit();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -193,16 +197,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         super.onActivityResult(requestCode, resultCode, data);
         logger.log(Log.VERBOSE, TAG, "onStop PIPMode " + navigator.getPipMode());
         getReactGateway().onActivityResult(this, requestCode, resultCode, data);
-    }
-
-    @Override
-    public void onBackPressed() {
-        logger.log(Log.VERBOSE, TAG, "onBackPressed PIPMode " + navigator.getPipMode());
-        if (navigator.resolveCurrentOptions().bottomTabsOptions.resetToFirstTabOnBack.isTrue()) {
-            invokeDefaultOnBackPressed();
-        } else {
-            getReactGateway().onBackPressed();
-        }
     }
 
     @Override
@@ -256,11 +250,12 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     @Override
     public void startActivity(Intent intent) {
-      navigatingToAnotherActivity = true;
+        navigatingToAnotherActivity = true;
         super.startActivity(intent);
     }
 
-    public void onSetRootSuccess() { }
+    public void onSetRootSuccess() {
+    }
 
     /*
     @Override
@@ -279,7 +274,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     }
 
     private void setBackPressedCallback() {
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 getReactGateway().onBackPressed();
@@ -329,6 +324,10 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
         }
     };
+
+    private boolean isNavigatingToAnotherActivity() {
+        return navigatingToAnotherActivity || NavigationApplication.instance.navigatingToAnotherActivity;
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean canEnterPiPMode() {
