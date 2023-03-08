@@ -92,6 +92,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onResume() {
         super.onResume();
         navigatingToAnotherActivity = false;
+        NavigationApplication.instance.navigatingToAnotherActivity = false;
         logger.log(Log.INFO, TAG, "onResume PIPMode " + navigator.getPipMode());
         if (navigator.getPipMode() == PIPStates.NOT_STARTED) {
             getReactGateway().onActivityResumed(this);
@@ -134,14 +135,14 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
         logger.log(Log.INFO, TAG, "onUserLeaveHint shouldSwitchToPIP " + navigator.shouldSwitchToPIPonHomePress() + "  PIPMode " + navigator.getPipMode());
-        if (!navigatingToAnotherActivity && navigator.shouldSwitchToPIPonHomePress() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && canEnterPiPMode()) {
+        if (!isNavigatingToAnotherActivity() && navigator.shouldSwitchToPIPonHomePress() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O && canEnterPiPMode()) {
             navigator.updatePIPState(PIPStates.NATIVE_MOUNT_START);
             try {
                 enterPictureInPictureMode(navigator.getPictureInPictureParams());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else if (!navigatingToAnotherActivity && navigator.shouldSwitchToPIPonHomePress() &&
+        } else if (!isNavigatingToAnotherActivity() && navigator.shouldSwitchToPIPonHomePress() &&
                 (navigator.getPipMode() == PIPStates.CUSTOM_MOUNTED || navigator.getPipMode() == PIPStates.CUSTOM_COMPACT)) {
             navigator.updatePIPState(PIPStates.UNMOUNT_START);
         }
@@ -323,6 +324,10 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
         }
     };
+
+    private boolean isNavigatingToAnotherActivity() {
+        return navigatingToAnotherActivity || NavigationApplication.instance.navigatingToAnotherActivity;
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean canEnterPiPMode() {
