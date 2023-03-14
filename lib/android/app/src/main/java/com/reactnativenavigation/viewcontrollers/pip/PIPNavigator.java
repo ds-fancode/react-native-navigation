@@ -200,18 +200,22 @@ public class PIPNavigator extends ParentController<PIPContainer> {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (PIPNavigator.this.childController != null) {
-                    updatePIPStateInternal(PIPStates.UNMOUNT_START);
-                    PIPNavigator.this.childController.detachView();
-                    PIPNavigator.this.childController.onViewWillDisappear();
-                    PIPNavigator.this.childController.destroy();
-                    updatePIPStateInternal(NOT_STARTED);
-                    if (listener != null)
-                        listener.onSuccess("PIP Closed");
-                    clearPIP();
-                } else {
-                    if (listener != null)
-                        listener.onSuccess("PIP is not available");
+                try {
+                    if (PIPNavigator.this.childController != null) {
+                        updatePIPStateInternal(PIPStates.UNMOUNT_START);
+                        PIPNavigator.this.childController.detachView();
+                        PIPNavigator.this.childController.onViewWillDisappear();
+                        PIPNavigator.this.childController.destroy();
+                        updatePIPStateInternal(NOT_STARTED);
+                        if (listener != null)
+                            listener.onSuccess("PIP Closed");
+                        clearPIP();
+                    } else {
+                        if (listener != null)
+                            listener.onSuccess("PIP is not available");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
