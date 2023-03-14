@@ -1,9 +1,12 @@
 package com.reactnativenavigation;
 
 import android.app.Application;
+import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
@@ -23,6 +26,8 @@ public abstract class NavigationApplication extends Application implements React
     private static ILogger DEFAULT_LOGGER;
     final Map<String, ExternalComponentCreator> externalComponents = new HashMap<>();
 
+    protected boolean navigatingToAnotherActivity = false;
+    
     @Override
     public void onCreate() {
         super.onCreate();
@@ -30,6 +35,18 @@ public abstract class NavigationApplication extends Application implements React
         instance = this;
         SoLoader.init(this, false);
         reactGateway = createReactGateway();
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        super.startActivity(intent);
+        navigatingToAnotherActivity=true;
+    }
+
+    @Override
+    public void startActivity(Intent intent, @Nullable Bundle options) {
+        super.startActivity(intent, options);
+        navigatingToAnotherActivity=true;
     }
 
     /**

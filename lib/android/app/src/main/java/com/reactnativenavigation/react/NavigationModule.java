@@ -58,26 +58,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
         this.reactInstanceManager = reactInstanceManager;
         this.jsonParser = jsonParser;
         this.layoutFactory = layoutFactory;
-        reactContext.addLifecycleEventListener(new LifecycleEventListenerAdapter() {
-            @Override
-            public void onHostPause() {
-                super.onHostPause();
-                UiUtils.runOnMainThread(() -> navigator().onHostPause());
-            }
-
-            @Override
-            public void onHostResume() {
-                eventEmitter = new EventEmitter(reactContext);
-                navigator().setEventEmitter(eventEmitter);
-                layoutFactory.init(
-                        activity(),
-                        eventEmitter,
-                        navigator().getChildRegistry(),
-                        ((NavigationApplication) activity().getApplication()).getExternalComponents()
-                );
-                UiUtils.runOnMainThread(() -> navigator().onHostResume());
-            }
-        });
+        reactContext.addLifecycleEventListener(listenerAdapter);
     }
 
     @NonNull
@@ -167,7 +148,7 @@ public class NavigationModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void closePIP(String commandId, Promise promise) {
-        handle(() ->  navigator().closePIP(new NativeCommandListener("closePIP", commandId, promise, eventEmitter, now)));
+        handle(() -> navigator().closePIP(new NativeCommandListener("closePIP", commandId, promise, eventEmitter, now)));
     }
 
     @ReactMethod
@@ -279,4 +260,31 @@ public class NavigationModule extends ReactContextBaseJavaModule {
         }
         super.onCatalystInstanceDestroy();
     }
+
+    private LifecycleEventListenerAdapter listenerAdapter = new LifecycleEventListenerAdapter() {
+        @Override
+        public void onHostPause() {
+            super.onHostPause();
+            UiUtils.runOnMainThread(() -> {
+                try {
+                    navigator().onHostPause();
+                } catch (Exception e) {
+
+                }
+            });
+        }
+        
+        @Override
+        public void onHostResume() {
+            eventEmitter = new EventEmitter(getReactApplicationContext());
+            navigator().setEventEmitter(eventEmitter);
+            layoutFactory.init(
+                    activity(),
+                    eventEmitter,
+                    navigator().getChildRegistry(),
+                    ((NavigationApplication) activity().getApplication()).getExternalComponents()
+            );
+            UiUtils.runOnMainThread(() -> navigator().onHostResume());
+        }
+    };
 }
